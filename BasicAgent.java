@@ -29,13 +29,25 @@ public class BasicAgent extends Agent {
         agentState = new BasicAgentState("", 0, 0.0, 0.0, 0.0, 0.0);
     }
 
-    //The constructor for your agent
+    // Note: this constructor won't work for now
     public BasicAgent(String agentIDName, int agentIDNumber, double X, double Y,
-            long seed, double maxMovePerCycleX, double maxMovePerCycleY,
+		      long seed, double maxMovePerCycleX, double maxMovePerCycleY,
             Hashtable<String, SimObject> SchdulerObjectManagementList) {
         super(new BasicAgentState(agentIDName, agentIDNumber, X, Y,
                 maxMovePerCycleX, maxMovePerCycleY),
                 SchdulerObjectManagementList);
+        this.seed = seed;
+        random = new SpecialRandom(seed); // seed the local random number generator
+        
+        //Generate a location for the agent based off of max height and width of 
+        //The environment size of your choosing
+        initialize(this, 1000, 1000);
+    }
+
+    // The constructor for your agent
+    public BasicAgent(String agentIDName, int agentIDNumber, double X, double Y,
+		      long seed, Hashtable<String, SimObject> SchdulerObjectManagementList) {
+        super(new BasicAgentState(agentIDName, agentIDNumber, X, Y), SchdulerObjectManagementList);
         this.seed = seed;
         random = new SpecialRandom(seed); // seed the local random number generator
         
@@ -72,15 +84,14 @@ public class BasicAgent extends Agent {
         if (!isAlive()) {
             return;
         }
-
         //an array of localworld + proxy Agents if they exist
         ArrayList<SimObject> all = getAllPerceivableAgents(scheduler);
 
         //Go through all the observable objects and perform whatever sensory 
         //actions
         for (SimObject so : all) {
+            //<your code here>
         }
-
     }
 
     /*
@@ -96,7 +107,7 @@ public class BasicAgent extends Agent {
         if (!isAlive()) {
             return;
         }
-        
+
         //<your code here>
     }
 
@@ -164,6 +175,7 @@ public class BasicAgent extends Agent {
 
     //Returns whether or not the agent is alive
     public boolean isAlive() {
-        return getBasicAgentState().isAlive();
+	//        return getBasicAgentState().isAlive();
+        return ((BasicAgentState) agentState).isAlive();
     }
 }

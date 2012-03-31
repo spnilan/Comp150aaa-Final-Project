@@ -2,13 +2,13 @@
 class Disease {
     public double probTransmission;
     public double probRecovery;
-    public double probInital;
+    public double probInitial;
 
     Disease() {
         this(0.1, 0.1, 0.1);    
     }
 
-    Disease(double pt, pr, pi) {
+    Disease(double pt, double pr, double pi) {
         this.probTransmission = pt;
         this.probRecovery = pr;
         this.probInitial = pi;

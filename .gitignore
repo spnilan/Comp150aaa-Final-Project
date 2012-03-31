@@ -1,0 +1,6 @@
+
+*.class
+world.jar
+simworldfiles/
+simworldfiles/*
+
