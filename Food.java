@@ -9,30 +9,19 @@ import com.grid.simulations.simworld.worlds.collector.EntityState;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-/**
- * @author Max Smiley
- */
-public class BasicAgent extends Agent {
+public class Food extends Agent {
 
-    //Define any variables you want below, if you want them to be recordable,
-    //make sure that they are public.
     public double speed, heading;
-    
     public double energy;
-   
-   
-    // specific to our agent
-    private Disease disease = null;
-    private double observability;
 
     //All agents need to have a default constructor
-    public BasicAgent() {
+    public Food() {
         super();
         agentState = new BasicAgentState("", 0, 0.0, 0.0, 0.0, 0.0);
     }
 
     // Note: this constructor won't work for now
-    public BasicAgent(String agentIDName, int agentIDNumber, double X, double Y,
+    public Food(String agentIDName, int agentIDNumber, double X, double Y,
 		      long seed, double maxMovePerCycleX, double maxMovePerCycleY,
             Hashtable<String, SimObject> SchdulerObjectManagementList) {
         super(new BasicAgentState(agentIDName, agentIDNumber, X, Y,
@@ -47,7 +36,7 @@ public class BasicAgent extends Agent {
     }
 
     // The constructor for your agent
-    public BasicAgent(String agentIDName, int agentIDNumber, double X, double Y,
+    public Food(String agentIDName, int agentIDNumber, double X, double Y,
 		      long seed, Hashtable<String, SimObject> SchdulerObjectManagementList) {
         super(new BasicAgentState(agentIDName, agentIDNumber, X, Y), SchdulerObjectManagementList);
         this.seed = seed;
@@ -69,38 +58,12 @@ public class BasicAgent extends Agent {
 
     //You may want to decide the placement of your agents, for now I have it 
     //generating random positions for them
-    public void initialize(BasicAgent agent, double maxX, double maxY) {
+    public void initialize(Food agent, double maxX, double maxY) {
         // if we don't have numbers yet, create a random position
         if (!((agent.getX() != -1) && (agent.getY() != -1))) {
             agent.setX(Math.random() * maxX);
             agent.setY(Math.random() * maxY);
         }
-
-        observability = Math.random();
-    }
-
-
-    public boolean isSick() {
-        double rand = Math.random();
-        boolean sick = disease != null;
-        
-        if (rand < observability) {
-        // tell the truth
-            return sick;
-        }
-        else {
-            return !sick;
-        }
-    }
-
-
-    public void receiveDisease(Disease d) {
-        this.disease = d;
-    }
-
-    public void spreadDisease(Disease d, ArrayList<Agent> agents) {
-
-
     }
 
     //This method is called alongside all other agent's sense functions before
@@ -108,21 +71,7 @@ public class BasicAgent extends Agent {
     //before it or any agent acts.
     @Override
     public void sense(ArrayList<SimObject> localworld, SimScheduler scheduler) {
-        //A simple check the make sure you agent doesn't sense if its not alive
-        if (!isAlive()) {
-            return;
-        }
-        //an array of localworld + proxy Agents if they exist
-        ArrayList<SimObject> all = getAllPerceivableAgents(scheduler);
-
-        //Go through all the observable objects and perform whatever sensory 
-        //actions
-        for (SimObject so : all) {
-            if (so instanceof Agent) {
-                Agent agent = (Agent)so;
-            
-            }
-        }
+        return;
     }
 
     /*
@@ -134,33 +83,7 @@ public class BasicAgent extends Agent {
      */
     @Override
     public void act(ArrayList<SimObject> localworld, SimScheduler scheduler) {
-        //A simple check the make sure you agent doesn't act if its not alive
-        if (!isAlive()) {
-            return;
-        }
-
-        //<your code here>
-    }
-
-    //Move the agent towards the x,y coordinate, adjusting its heading angle 
-    //accordingly
-    //The agent will move based off of its current speed
-    public void move(double newx, double newy) {
-        double new_heading;
-
-        //If the the new coordinates are empty, don't change heading
-        if (newx == 0 && newy == 0) {
-            new_heading = heading;
-        } else {
-            new_heading = Math.toDegrees(Math.atan2(newy - getY(), newx - getX()));
-        }
-
-        //Update the agent states coordinates accordingly
-        BasicAgentState ps = getBasicAgentState();
-        ps.setX(ps.getX() + speed * Math.cos(Math.toRadians(new_heading)));
-        ps.setY(ps.getY() + speed * Math.sin(Math.toRadians(new_heading)));
-
-        heading = new_heading;
+        return;
     }
 
     //Returns the distrance between two agents
@@ -186,25 +109,6 @@ public class BasicAgent extends Agent {
         System.err.println("Your agent died!");
     }
 
-    //Returns all local and proxy agents that this agent has access to
-    private ArrayList<SimObject> getAllPerceivableAgents(SimScheduler scheduler) {
-        ArrayList<SimObject> all = new ArrayList<SimObject>();
-        for (SimObject so : scheduler.localAgents.values()) {
-            all.add(so);
-        }
-        if (scheduler.proxyAgents != null) {
-            if (scheduler.proxyAgents.size() > 0) {
-                for (ReducedSimObject so : scheduler.proxyAgents.values()) {
-                    if (!all.contains(so)) {
-                        all.add(so);
-                    }
-                }
-            }
-        }
-        return all;
-    }
-
-    //Returns whether or not the agent is alive
     public boolean isAlive() {
 	//        return getBasicAgentState().isAlive();
         return ((BasicAgentState) agentState).isAlive();
