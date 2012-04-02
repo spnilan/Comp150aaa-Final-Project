@@ -17,11 +17,13 @@ public class BasicAgent extends Agent {
     //Define any variables you want below, if you want them to be recordable,
     //make sure that they are public.
     public double speed, heading;
-    //Some likely variables to be used if your agent has movement. The speed at 
-    // which your agent moves and the angle (in degrees) that it is heading. 
-    //I use both in the move function beflow. 
+    
     public double energy;
-    //Again, a likely variable, the current energy of your agent
+   
+   
+    // specific to our agent
+    private Disease disease = NULL;
+    private double observability;
 
     //All agents need to have a default constructor
     public BasicAgent() {
@@ -73,6 +75,32 @@ public class BasicAgent extends Agent {
             agent.setX(Math.random() * maxX);
             agent.setY(Math.random() * maxY);
         }
+
+        observability = Math.random();
+    }
+
+
+    public boolean isSick() {
+        double rand = Math.random();
+        boolean sick = disease != NULL;
+        
+        if (rand < observability) {
+        // tell the truth
+            return sick;
+        }
+        else {
+            return !sick;
+        }
+    }
+
+
+    public void receiveDisease(Disease d) {
+        this.disease = d;
+    }
+
+    public void spreadDisease(Disease d, ArrayList<Agent> agents) {
+
+
     }
 
     //This method is called alongside all other agent's sense functions before
