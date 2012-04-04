@@ -9,17 +9,12 @@ import com.grid.simulations.simworld.worlds.collector.EntityState;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-/**
- * @author Max Smiley
- */
 public class BasicAgent extends Agent {
 
     //Define any variables you want below, if you want them to be recordable,
     //make sure that they are public.
     public double speed, heading;
-    
     public double energy;
-   
    
     // specific to our agent
     private Disease disease = null;
@@ -29,6 +24,7 @@ public class BasicAgent extends Agent {
     public BasicAgent() {
         super();
         agentState = new BasicAgentState("", 0, 0.0, 0.0, 0.0, 0.0);
+        initialize(this, 1000, 1000);
     }
 
     // Note: this constructor won't work for now
@@ -76,9 +72,17 @@ public class BasicAgent extends Agent {
             agent.setY(Math.random() * maxY);
         }
 
-        observability = Math.random();
+        //observability = Math.random();
+        observability = 1.0;
+        speed = 3.0;
+        heading = 150;
+        energy = 1000;
+        System.out.println("initializing agent " + agentState.agentID); 
     }
 
+    public String getID() {
+        return this.agentState.agentID;
+    }
 
     public boolean isSick() {
         double rand = Math.random();
@@ -94,15 +98,6 @@ public class BasicAgent extends Agent {
     }
 
 
-    public void receiveDisease(Disease d) {
-        this.disease = d;
-    }
-
-    public void spreadDisease(Disease d, ArrayList<Agent> agents) {
-
-
-    }
-
     //This method is called alongside all other agent's sense functions before
     //any act functions are called. This gives your agent the oportunity to sense
     //before it or any agent acts.
@@ -115,15 +110,56 @@ public class BasicAgent extends Agent {
         //an array of localworld + proxy Agents if they exist
         ArrayList<SimObject> all = getAllPerceivableAgents(scheduler);
 
-        //Go through all the observable objects and perform whatever sensory 
-        //actions
+        double totalWeight = 0.0;
+        double repulsionFactor = 20;
+        double healthyFactor = 10; // grouping factor
+        double foodFactor = 15;   
+        double angleSum = 0;
+
         for (SimObject so : all) {
-            if (so instanceof Agent) {
-                Agent agent = (Agent)so;
-            
+            if (so instanceof BasicAgent) {
+                BasicAgent agent = (BasicAgent)so;
+                double d = distanceBetween(this, agent);
+                double angle = (angleBetween(this, agent) + 3600) % 360;
+                double weight;
+
+                if (agent.getID() != this.getID()) {
+                    if (agent.isSick()) { 
+                        // repulsion from sick agents
+                        weight = d > 0 ? repulsionFactor / (d * d * d) : 0;
+                        if (angle >= 180) {
+                           angle -= 180;
+                        }
+                        else {
+                           angle += 180;
+                        } 
+                    }
+                    else {
+                        weight = d > 0 ? healthyFactor / (d * d * d) : 0;
+                    }
+                    angleSum += (weight * angle);
+                    totalWeight += weight;
+                }
+            }
+            else if (so instanceof Food) {
+                Food food = (Food)so;
+                double d = distanceBetween(this, food);
+                double angle = (angleBetween(this, food) + 3600) % 360;
+                double weight = d > 0 ? foodFactor / (d * d * d) : 0;
+                totalWeight += weight;
+                angleSum += weight * angle;
             }
         }
+
+        double targetHeading = 0;
+        if (totalWeight > 0) {
+            targetHeading = angleSum / totalWeight;
+        }
+       
+        heading = targetHeading; 
+        System.out.println("target angle: " + targetHeading);
     }
+
 
     /*
      * In the act function, your agent shouldn't be scanning through the agents
@@ -139,7 +175,13 @@ public class BasicAgent extends Agent {
             return;
         }
 
-        //<your code here>
+
+       //BasicAgentState ps = getBasicAgentState();
+       //ps.setX(ps.getX() + speed * Math.cos(Math.toRadians(heading)));
+       //ps.setY(ps.getY() + speed * Math.sin(Math.toRadians(heading)));
+       //System.out.println("agentID: " + getID() + " heading: " + heading + " x: " + ps.getX() + " y: " + ps.getY()); 
+    
+        move(100, 100);
     }
 
     //Move the agent towards the x,y coordinate, adjusting its heading angle 
@@ -164,7 +206,7 @@ public class BasicAgent extends Agent {
     }
 
     //Returns the distrance between two agents
-    static public double distanceBetween(Entity obj1, Agent obj2) {
+    static public double distanceBetween(Agent obj1, Agent obj2) {
         double agentsX = obj1.getX() - obj2.getX();
         double agentsY = obj1.getY() - obj2.getY();
         return Math.sqrt(agentsX * agentsX + agentsY * agentsY);
@@ -172,7 +214,7 @@ public class BasicAgent extends Agent {
 
     //Returns the angle (in radians) between two agents, 
     // with the angle origin at the first agent pointing towards the second agent
-    static public double angleBetween(Entity obj1, Agent obj2) {
+    static public double angleBetween(Agent obj1, Agent obj2) {
         return Math.toDegrees(Math.atan2(obj2.getY() - obj1.getY(),
                 obj2.getX() - obj1.getX()));
     }

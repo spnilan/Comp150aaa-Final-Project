@@ -64,6 +64,10 @@ public class Food extends Agent {
             agent.setX(Math.random() * maxX);
             agent.setY(Math.random() * maxY);
         }
+
+        speed = 0;
+        heading = 0;
+        energy = 2000;
     }
 
     //This method is called alongside all other agent's sense functions before
@@ -114,3 +118,4 @@ public class Food extends Agent {
         return ((BasicAgentState) agentState).isAlive();
     }
 }
+
