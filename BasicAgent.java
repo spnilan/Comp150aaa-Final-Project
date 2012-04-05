@@ -57,10 +57,7 @@ public class BasicAgent extends Agent {
     //Considers the agent's agentstate as a BasicAgentState, so that you can manipulate
     //BasicAgentState accordingly
     public BasicAgentState getBasicAgentState() {
-        if (agentState instanceof EntityState) {
-            return (BasicAgentState) agentState;
-        }
-        return null;
+        return (BasicAgentState) agentState;
     }
 
     //You may want to decide the placement of your agents, for now I have it 
@@ -176,12 +173,11 @@ public class BasicAgent extends Agent {
         }
 
 
-       //BasicAgentState ps = getBasicAgentState();
-       //ps.setX(ps.getX() + speed * Math.cos(Math.toRadians(heading)));
-       //ps.setY(ps.getY() + speed * Math.sin(Math.toRadians(heading)));
-       //System.out.println("agentID: " + getID() + " heading: " + heading + " x: " + ps.getX() + " y: " + ps.getY()); 
+       BasicAgentState ps = (BasicAgentState)agentState;
+       ps.setX(ps.getX() + speed * Math.cos(Math.toRadians(heading)));
+       ps.setY(ps.getY() + speed * Math.sin(Math.toRadians(heading)));
+       System.out.println("agentID: " + getID() + " heading: " + heading + " x: " + ps.getX() + " y: " + ps.getY()); 
     
-        move(100, 100);
     }
 
     //Move the agent towards the x,y coordinate, adjusting its heading angle 
