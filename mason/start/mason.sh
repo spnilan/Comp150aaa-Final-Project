@@ -19,4 +19,6 @@ if ("$jars" != "${MASON_HOME}/\*\.jar") then
         end
 endif
 
+echo "MASON_HOME: ${MASON_HOME}"
+echo "CLASSPATH: ${CLASSPATH}"
 java -server -Xmx200M sim.display.Console
