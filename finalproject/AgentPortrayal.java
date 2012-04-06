@@ -8,7 +8,7 @@ import java.awt.*;
 class AgentPortrayal extends OvalPortrayal2D
 {
     // Portrayal parameters:
-    protected static Color healthyColor = new Color(0, 255, 0);
+    protected static Color healthyColor = new Color(0, 0, 127);
     protected static Color sickColor  = new Color(255, 0, 0);
 
     public void draw(Object object, Graphics2D graphics, DrawInfo2D info)

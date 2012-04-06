@@ -1,49 +1,38 @@
-import sim.util.*;
 import sim.engine.*;
-import java.awt.*;
-import sim.portrayal.*;
+import sim.util.Double2D;
 
-public class Food extends Agent
+/**
+ * An food item. The item has a certain amount of energy that decays with time.
+ */
+public class Food implements Steppable
 {
+    // Food-item parameters:
+    protected static final double stepInterval = 7;
+    protected static final double initialEnergy = 120;
+    protected static final double energyDrainPerStep = 3;
 
-    public Food( String id, Double2D location ) 
+    // Food-item data:
+    protected double energy;
+    protected Stoppable scheduleItem;
+
+    /** Initializes a food item. */
+    public Food()
     {
-        super( id, location );
-        try
-            {
-            intID = Integer.parseInt( id.substring(5) ); // "Human"
-            }
-        catch( IndexOutOfBoundsException e )
-            {
-            System.err.println( "Exception generated: " + e );
-            System.exit(1);
-            }
-        catch( NumberFormatException e )
-            {
-            System.err.println( "Exception generated: " + e );
-            System.exit(1);
-            }
+        this.energy = initialEnergy;
     }
 
-
-    public void step( final SimState state )
+    /**
+     * Decreases the energy of a food item. If the energy drops to zero, removes
+     * the item from the environment and the schedule.
+     */
+    public void step(final SimState state)
     {
-        // food doesn't move
-    }
-
-    protected Color foodColor = new Color(128,255,128);
-    public final void draw(Object object, Graphics2D graphics, DrawInfo2D info)
-    {
-        double diamx = info.draw.width*DiseaseSpread.DIAMETER;
-        double diamy = info.draw.height*DiseaseSpread.DIAMETER;
-    
-        graphics.setColor ( foodColor ); 
-        graphics.fillOval((int)(info.draw.x-diamx/2),(int)(info.draw.y-diamy/2),(int)(diamx),(int)(diamy));
-    }
-
-
-    public String getType()
-    {
-        return "Food";
+        DiseaseSpread sim = (DiseaseSpread)state;
+        energy -= energyDrainPerStep;
+        if(energy <= 0) {
+            sim.environment.remove(this);
+            scheduleItem.stop();
+            System.out.println("Food item expired");
+        }
     }
 }

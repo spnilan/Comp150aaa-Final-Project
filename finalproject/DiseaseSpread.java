@@ -26,7 +26,8 @@ public class DiseaseSpread extends SimState
     */
 
     // Simulation data:
-    protected Continuous2D environment = null;
+    protected Continuous2D environment;
+    protected FoodMaker foodMaker;
 
     /** Creates a DiseaseSpread simulation with the given random number seed. */
     public DiseaseSpread(long seed)
@@ -51,9 +52,13 @@ public class DiseaseSpread extends SimState
             boolean infected = (random.nextDouble() < disease.probInitial);
             Agent agent = new Agent(addedAgents, loc, infected);
             environment.setObjectLocation(agent, loc);
-            schedule.scheduleRepeating(agent);
+            schedule.scheduleRepeating(agent); // default interval=1.0
             addedAgents++;
         }
+
+        // Create and schedule a FoodMaker.
+        foodMaker = new FoodMaker();
+        schedule.scheduleRepeating(schedule.EPOCH, foodMaker, FoodMaker.stepInterval);
     }
 
     /** Runs the simulation without a GUI. */
