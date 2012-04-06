@@ -14,17 +14,6 @@ public class DiseaseSpread extends SimState
     protected static final int numAgents = 20;
     protected static final Disease disease = new Disease(0.2, 0.2, 0.2, 1.2);
 
-    /*
-    public static final double DIAMETER = 8;
-
-    public static final double HEALING_DISTANCE = 20;
-    public static final double HEALING_DISTANCE_SQUARED = HEALING_DISTANCE * HEALING_DISTANCE;
-    public static final double INFECTION_DISTANCE = 20;
-    public static final double INFECTION_DISTANCE_SQUARED = INFECTION_DISTANCE * INFECTION_DISTANCE;
-
-    public static final int NUM_FOOD = 20;
-    */
-
     // Simulation data:
     protected Continuous2D environment;
     protected FoodMaker foodMaker;
