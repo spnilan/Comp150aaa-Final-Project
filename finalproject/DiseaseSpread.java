@@ -11,8 +11,8 @@ public class DiseaseSpread extends SimState
     // Simulation parameters:
     protected static final double xMax = 80;
     protected static final double yMax = 60;
-    protected static final int numAgents = 100;
-    protected static final Disease disease = new Disease(0.2, 0.2, 0.2);
+    protected static final int numAgents = 20;
+    protected static final Disease disease = new Disease(0.2, 0.2, 0.2, 1.2);
 
     /*
     public static final double DIAMETER = 8;
@@ -52,7 +52,7 @@ public class DiseaseSpread extends SimState
             boolean infected = (random.nextDouble() < disease.probInitial);
             Agent agent = new Agent(addedAgents, loc, infected);
             environment.setObjectLocation(agent, loc);
-            schedule.scheduleRepeating(agent); // default interval=1.0
+            agent.scheduleItem = schedule.scheduleRepeating(agent); // default interval=1.0
             addedAgents++;
         }
 
