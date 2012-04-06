@@ -7,7 +7,7 @@ import sim.util.Double2D;
 public class FoodMaker implements Steppable
 {
     // Food-maker parameters:
-    protected static final double stepInterval = 100.0;
+    protected static final double stepInterval = 15;
     protected static final int spawnCount = 30;
 
     /**

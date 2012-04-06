@@ -32,7 +32,7 @@ public class Food implements Steppable
         if(energy <= 0) {
             sim.environment.remove(this);
             scheduleItem.stop();
-            System.out.println("Food item expired");
+            // System.out.println("Food item expired");
         }
     }
 }

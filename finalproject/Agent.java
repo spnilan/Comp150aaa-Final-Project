@@ -11,12 +11,14 @@ public class Agent implements Steppable
     protected static final double initialEnergy = 1000;
     protected static final double energyDrainPerStep = 10;
     protected static final double sensoryRange = 10;
+    protected static final int stepsSatiated = 10;
 
     // Agent data:
     public int id;
     public Double2D location;
     public double energy;
     public boolean infected;
+    public int stepsUntilCanEat;
     protected Stoppable scheduleItem;
 
     /** Initializes an agent with the given id and location. */
@@ -26,6 +28,7 @@ public class Agent implements Steppable
         this.location = location;
         this.energy = initialEnergy;
         this.infected = infected;
+        this.stepsUntilCanEat = 0;
     }
 
     /** Updates the agent at every step of the simulation. */
@@ -67,13 +70,16 @@ public class Agent implements Steppable
             }
         }
 
-        // Eat the best food item found, if any.
-        if(bestItem != null && bestItem.energy > 0) {
+        // If we can eat and we saw food, eat it.
+        if(bestItem != null && bestItem.energy > 0 && stepsUntilCanEat == 0) {
             energy += bestItem.energy;
             bestItem.energy = 0;
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
             System.out.println("Agent " + id + " ate");
+            stepsUntilCanEat = stepsSatiated;
+        } else if(stepsUntilCanEat > 0) {
+            stepsUntilCanEat--;
         }
 
         // Move slightly in a random direction.
