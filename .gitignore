@@ -1,4 +1,5 @@
-
+*~
+*.sw*
 *.class
 world.jar
 simworldfiles/

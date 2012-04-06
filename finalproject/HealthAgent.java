@@ -1,8 +1,3 @@
-/*
-  Copyright 2006 by Sean Luke and George Mason University
-  Licensed under the Academic Free License version 3.0
-  See the file "LICENSE" for more information
-*/
 // TODO:
 // give the agents energy
 // remove energy somehow
@@ -11,15 +6,12 @@
 //
 // still have to figure out 2d movement : attaction / repulsion
 
-
-package sim.app.virus;
-
 import sim.util.*;
 import sim.engine.*;
 import java.awt.*;
 import sim.portrayal.*;
 
-public /*strictfp*/ class HealthAgent extends Agent
+public class HealthAgent extends Agent
 {
 
     public boolean infected = false;
@@ -91,8 +83,8 @@ public /*strictfp*/ class HealthAgent extends Agent
     protected Color healthyColor = new Color(0, 255, 0);
     public final void draw(Object object, Graphics2D graphics, DrawInfo2D info)
     {
-        double diamx = info.draw.width*VirusInfectionDemo.DIAMETER;
-        double diamy = info.draw.height*VirusInfectionDemo.DIAMETER;
+        double diamx = info.draw.width*DiseaseSpread.DIAMETER;
+        double diamy = info.draw.height*DiseaseSpread.DIAMETER;
 
         graphics.setColor( this.isInfected() ? sickColor : healthyColor);
 

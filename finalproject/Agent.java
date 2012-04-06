@@ -1,17 +1,9 @@
-/*
-  Copyright 2006 by Sean Luke and George Mason University
-  Licensed under the Academic Free License version 3.0
-  See the file "LICENSE" for more information
-*/
-
-package sim.app.virus;
-
 import sim.engine.*;
 import sim.util.Double2D;
 import sim.portrayal.*;
 import java.awt.geom.*;
 
-public abstract /*strictfp*/ class Agent extends SimplePortrayal2D implements Steppable
+public abstract class Agent extends SimplePortrayal2D implements Steppable
 {
 
     public String id;
@@ -36,8 +28,8 @@ public abstract /*strictfp*/ class Agent extends SimplePortrayal2D implements St
 
     public boolean hitObject(Object object, DrawInfo2D info)
     {
-        double diamx = info.draw.width*VirusInfectionDemo.DIAMETER;
-        double diamy = info.draw.height*VirusInfectionDemo.DIAMETER;
+        double diamx = info.draw.width*DiseaseSpread.DIAMETER;
+        double diamy = info.draw.height*DiseaseSpread.DIAMETER;
 
         Ellipse2D.Double ellipse = new Ellipse2D.Double( (int)(info.draw.x-diamx/2),(int)(info.draw.y-diamy/2),(int)(diamx),(int)(diamy) );
         return ( ellipse.intersects( info.clip.x, info.clip.y, info.clip.width, info.clip.height ) );

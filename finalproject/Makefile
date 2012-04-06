@@ -1,0 +1,2 @@
+dummy: *.java
+	javac *.java

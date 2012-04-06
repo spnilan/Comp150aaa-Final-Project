@@ -1,17 +1,9 @@
-/*
-  Copyright 2006 by Sean Luke and George Mason University
-  Licensed under the Academic Free License version 3.0
-  See the file "LICENSE" for more information
-*/
-
-package sim.app.virus;
-
 import sim.util.*;
 import sim.engine.*;
 import java.awt.*;
 import sim.portrayal.*;
 
-public /*strictfp*/ class Food extends Agent
+public class Food extends Agent
 {
 
     public Food( String id, Double2D location ) 
@@ -42,8 +34,8 @@ public /*strictfp*/ class Food extends Agent
     protected Color foodColor = new Color(128,255,128);
     public final void draw(Object object, Graphics2D graphics, DrawInfo2D info)
     {
-        double diamx = info.draw.width*VirusInfectionDemo.DIAMETER;
-        double diamy = info.draw.height*VirusInfectionDemo.DIAMETER;
+        double diamx = info.draw.width*DiseaseSpread.DIAMETER;
+        double diamy = info.draw.height*DiseaseSpread.DIAMETER;
     
         graphics.setColor ( foodColor ); 
         graphics.fillOval((int)(info.draw.x-diamx/2),(int)(info.draw.y-diamy/2),(int)(diamx),(int)(diamy));

@@ -1,17 +1,9 @@
-/*
-  Copyright 2006 by Sean Luke and George Mason University
-  Licensed under the Academic Free License version 3.0
-  See the file "LICENSE" for more information
-*/
-
-package sim.app.virus;
-
 import sim.field.continuous.*;
 import sim.engine.*;
 import sim.util.*;
 
 
-public /*strictfp*/ class DiseaseSpread extends SimState
+public class DiseaseSpread extends SimState
     {
     public static final double XMIN = 0;
     public static final double XMAX = 800;

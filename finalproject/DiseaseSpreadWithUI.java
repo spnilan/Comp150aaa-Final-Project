@@ -1,11 +1,3 @@
-/*
-  Copyright 2006 by Sean Luke and George Mason University
-  Licensed under the Academic Free License version 3.0
-  See the file "LICENSE" for more information
-*/
-
-package sim.app.virus;
-
 import sim.portrayal.continuous.*;
 import sim.engine.*;
 import sim.display.*;
@@ -29,7 +21,7 @@ public class DiseaseSpreadWithUI extends GUIState
     public DiseaseSpreadWithUI() { super(new DiseaseSpread( System.currentTimeMillis())); }
     public DiseaseSpreadWithUI(SimState state) { super(state); }
 
-    public static String getName() { return "Virus Infection"; }
+    public static String getName() { return "DiseaseSpread"; }
         
     public void start()
     {

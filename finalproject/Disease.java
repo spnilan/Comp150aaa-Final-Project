@@ -1,5 +1,3 @@
-package sim.app.virus;
-
 class Disease {
     public double probTransmission;
     public double probRecovery;
