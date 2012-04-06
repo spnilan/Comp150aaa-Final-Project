@@ -40,6 +40,8 @@ public class Agent implements Steppable
 
         DiseaseSpread sim = (DiseaseSpread)state;
 
+        System.out.println("Agent " + id + " has location " + location);
+
         /*
         Bag neighbors = hb.environment.getObjectsWithinDistance(agentLocation, 10.0 * DiseaseSpread.INFECTION_DISTANCE);
         for (int i=0; i < neighbors.numObjs; i++) {

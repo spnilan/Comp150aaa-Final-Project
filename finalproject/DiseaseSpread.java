@@ -2,6 +2,7 @@ import sim.field.continuous.*;
 import sim.engine.*;
 import sim.util.*;
 
+
 /**
  * Encapsulates the disease-spreading simulation, with no GUI. Useful for batch
  * runs.
@@ -9,8 +10,8 @@ import sim.util.*;
 public class DiseaseSpread extends SimState
 {
     // Simulation parameters:
-    public static final double XMAX = 800;
-    public static final double YMAX = 600;
+    public static final double XMAX = 80;
+    public static final double YMAX = 60;
     public static final int NUM_AGENTS = 100;
 
     /*
@@ -65,3 +66,4 @@ public class DiseaseSpread extends SimState
         System.exit(0);
     }
 }
+
