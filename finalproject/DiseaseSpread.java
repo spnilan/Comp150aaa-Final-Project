@@ -2,7 +2,6 @@ import sim.field.continuous.*;
 import sim.engine.*;
 import sim.util.*;
 
-
 /**
  * Encapsulates the disease-spreading simulation, with no GUI. Useful for batch
  * runs.
@@ -10,9 +9,10 @@ import sim.util.*;
 public class DiseaseSpread extends SimState
 {
     // Simulation parameters:
-    public static final double XMAX = 80;
-    public static final double YMAX = 60;
-    public static final int NUM_AGENTS = 100;
+    protected static final double xMax = 80;
+    protected static final double yMax = 60;
+    protected static final int numAgents = 100;
+    protected static final Disease disease = new Disease(0.2, 0.2, 0.2);
 
     /*
     public static final double DIAMETER = 8;
@@ -23,12 +23,10 @@ public class DiseaseSpread extends SimState
     public static final double INFECTION_DISTANCE_SQUARED = INFECTION_DISTANCE * INFECTION_DISTANCE;
 
     public static final int NUM_FOOD = 20;
-
-    Disease malaria = new Disease(0.2, 0.2, 0.2);
     */
 
     // Simulation data:
-    public Continuous2D environment = null;
+    protected Continuous2D environment = null;
 
     /** Creates a DiseaseSpread simulation with the given random number seed. */
     public DiseaseSpread(long seed)
@@ -44,18 +42,17 @@ public class DiseaseSpread extends SimState
         super.start();
 
         // Set up environment.
-        environment = new Continuous2D(25.0, XMAX, YMAX);
+        environment = new Continuous2D(25.0, xMax, yMax);
 
         // Create and schedule agents.
         int addedAgents = 0;
-        while(addedAgents < NUM_AGENTS) {
-            Double2D loc = new Double2D(random.nextDouble() * XMAX, random.nextDouble() * YMAX);
-            Agent agent = new Agent(addedAgents, loc); // TODO does Agent need to know loc?
+        while(addedAgents < numAgents) {
+            Double2D loc = new Double2D(random.nextDouble() * xMax, random.nextDouble() * yMax);
+            boolean infected = (random.nextDouble() < disease.probInitial);
+            Agent agent = new Agent(addedAgents, loc, infected);
             environment.setObjectLocation(agent, loc);
             schedule.scheduleRepeating(agent);
             addedAgents++;
-
-            // TODO: set some agents infected at beginning of simulation
         }
     }
 
@@ -66,4 +63,3 @@ public class DiseaseSpread extends SimState
         System.exit(0);
     }
 }
-

@@ -1,5 +1,4 @@
 import sim.portrayal.continuous.*;
-import sim.portrayal.simple.*;
 import sim.engine.*;
 import sim.display.*;
 import javax.swing.*;
@@ -11,9 +10,9 @@ import java.awt.Color;
 public class DiseaseSpreadWithUI extends GUIState
 {
     // GUI data:
-    public Display2D display;
-    public JFrame displayFrame;
-    ContinuousPortrayal2D envPortrayal = new ContinuousPortrayal2D();
+    private Display2D display;
+    private JFrame displayFrame;
+    private ContinuousPortrayal2D envPortrayal = new ContinuousPortrayal2D();
 
     /** Initializes GUI with a new simulation. */
     public DiseaseSpreadWithUI()
@@ -54,7 +53,7 @@ public class DiseaseSpreadWithUI extends GUIState
 
         // tell the portrayals what to portray and how to portray them
         envPortrayal.setField(sim.environment);
-        envPortrayal.setPortrayalForAll(new OvalPortrayal2D());
+        envPortrayal.setPortrayalForAll(new AgentPortrayal());
 
         // reschedule the displayer
         display.reset();

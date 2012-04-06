@@ -8,8 +8,8 @@ import sim.util.Double2D;
 public class Agent implements Steppable
 {
     // Agent parameters:
-    private static final double initialEnergy = 1000;
-    private static final double energyDrain = 10;
+    protected static final double initialEnergy = 1000;
+    protected static final double energyDrainPerStep = 10;
 
     // Agent data:
     public int id;
@@ -18,12 +18,12 @@ public class Agent implements Steppable
     public boolean infected;
 
     /** Initializes an agent with the given id and location. */
-    public Agent(int id, Double2D location)
+    public Agent(int id, Double2D location, boolean infected)
     {
         this.id = id;
         this.location = location;
         this.energy = initialEnergy;
-        this.infected = false; // TODO probability
+        this.infected = infected;
     }
 
     /**
