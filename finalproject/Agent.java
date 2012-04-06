@@ -1,37 +1,68 @@
 import sim.engine.*;
 import sim.util.Double2D;
-import sim.portrayal.*;
-import java.awt.geom.*;
 
-public abstract class Agent extends SimplePortrayal2D implements Steppable
+/**
+ * An agent in the simulation. The agent has a certain amount of energy. The
+ * agent can be healthy or infected.
+ */
+public class Agent implements Steppable
 {
+    // Agent parameters:
+    private static final double initialEnergy = 1000;
+    private static final double energyDrain = 10;
 
-    public String id;
+    // Agent data:
+    public int id;
+    public Double2D location;
+    public double energy;
+    public boolean infected;
 
-    public Double2D agentLocation; 
-
-    public int intID = -1;
-
-    public Agent( String id, Double2D location )
+    /** Initializes an agent with the given id and location. */
+    public Agent(int id, Double2D location)
     {
         this.id = id;
-        this.agentLocation = location;
+        this.location = location;
+        this.energy = initialEnergy;
+        this.infected = false; // TODO probability
     }
 
-    double distanceSquared( final Double2D loc1, Double2D loc2 )
+    /**
+     * Updates the agent at every step of the simulation.
+     */
+    public void step(final SimState state)
     {
-        return( (loc1.x-loc2.x)*(loc1.x-loc2.x)+(loc1.y-loc2.y)*(loc1.y-loc2.y) );
-    }
+        // doesn't do anything right now
 
-    // Returns "Food" or "Agent" 
-    public abstract String getType();  
+        // TODO:
+        // remove energy
+        // spread disease
+        // 2d movement : attaction / repulsion
 
-    public boolean hitObject(Object object, DrawInfo2D info)
-    {
-        double diamx = info.draw.width*DiseaseSpread.DIAMETER;
-        double diamy = info.draw.height*DiseaseSpread.DIAMETER;
+        DiseaseSpread sim = (DiseaseSpread)state;
 
-        Ellipse2D.Double ellipse = new Ellipse2D.Double( (int)(info.draw.x-diamx/2),(int)(info.draw.y-diamy/2),(int)(diamx),(int)(diamy) );
-        return ( ellipse.intersects( info.clip.x, info.clip.y, info.clip.width, info.clip.height ) );
+        /*
+        Bag neighbors = hb.environment.getObjectsWithinDistance(agentLocation, 10.0 * DiseaseSpread.INFECTION_DISTANCE);
+        for (int i=0; i < neighbors.numObjs; i++) {
+
+            if (neighbors.objs[i] != null && neighbors.objs[i] != this) {
+                Agent agent = (Agent)neighbors.objs[i];
+                if (agent instanceof Food) {
+                    Food food = (Food)agent;
+
+                }
+                else if (agent instanceof HealthAgent) {
+                    HealthAgent opp = (HealthAgent)agent;
+                    if (this.isInfected() && 
+                           hb.withinInfectionDistance(this, agentLocation, opp, opp.agentLocation)) { 
+                        opp.setInfected(true);
+                    }
+                }
+            }
+        }
+
+        double dx = 1, dy = 1;
+        agentLocation = new Double2D(agentLocation.x + dx, agentLocation.y + dy);
+        hb.environment.setObjectLocation(this,agentLocation);
+        */
     }
 }
