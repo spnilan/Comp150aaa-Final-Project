@@ -36,6 +36,12 @@ public class Agent implements Steppable
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
+        // Check if the agent has recovered from the disease with a 
+        // given probability at each step
+        if (infected && sim.random.nextDouble() < sim.disease.probRecovery) {
+            infected = false;
+        }
+
         // Drain energy and remove agent from environment & schedule if the
         // energy drops to zero.
         double drain = energyDrainPerStep;
@@ -67,7 +73,15 @@ public class Agent implements Steppable
                 }
             } else if(neighbors.objs[i] instanceof Agent) {
                 // TODO compute forces
+                Agent agent = (Agent)neighbors.objs[i];
+                if (infected && sim.environment.getObjectLocation(agent).distance(location) <= sensoryRange) {
+                    if (!agent.infected && sim.random.nextDouble() <= sim.disease.probTransmission) {
+                        agent.infected = true;
+                    }
+                }
+            
             }
+
         }
 
         // If we can eat and we saw food, eat it.
