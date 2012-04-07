@@ -54,15 +54,6 @@ public class BasicAgent extends Agent {
         initialize(this, 1000, 1000);
     }
 
-    //Considers the agent's agentstate as a BasicAgentState, so that you can manipulate
-    //BasicAgentState accordingly
-    public BasicAgentState getBasicAgentState() {
-        if (agentState instanceof EntityState) {
-            return (BasicAgentState) agentState;
-        }
-        return null;
-    }
-
     //You may want to decide the placement of your agents, for now I have it 
     //generating random positions for them
     public void initialize(BasicAgent agent, double maxX, double maxY) {
@@ -176,12 +167,11 @@ public class BasicAgent extends Agent {
         }
 
 
-       //BasicAgentState ps = getBasicAgentState();
-       //ps.setX(ps.getX() + speed * Math.cos(Math.toRadians(heading)));
-       //ps.setY(ps.getY() + speed * Math.sin(Math.toRadians(heading)));
-       //System.out.println("agentID: " + getID() + " heading: " + heading + " x: " + ps.getX() + " y: " + ps.getY()); 
+       BasicAgentState ps = (BasicAgentState)agentState;
+       ps.setX(ps.getX() + speed * Math.cos(Math.toRadians(heading)));
+       ps.setY(ps.getY() + speed * Math.sin(Math.toRadians(heading)));
+       System.out.println("agentID: " + getID() + " heading: " + heading + " x: " + ps.getX() + " y: " + ps.getY()); 
     
-        move(100, 100);
     }
 
     //Move the agent towards the x,y coordinate, adjusting its heading angle 
@@ -198,7 +188,7 @@ public class BasicAgent extends Agent {
         }
 
         //Update the agent states coordinates accordingly
-        BasicAgentState ps = getBasicAgentState();
+        BasicAgentState ps = (BasicAgentState)agentState;
         ps.setX(ps.getX() + speed * Math.cos(Math.toRadians(new_heading)));
         ps.setY(ps.getY() + speed * Math.sin(Math.toRadians(new_heading)));
 
@@ -252,3 +242,4 @@ public class BasicAgent extends Agent {
         return ((BasicAgentState) agentState).isAlive();
     }
 }
+

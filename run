@@ -1,2 +1,0 @@
-javac *.java -cp swui.jar
-java -cp .:swui.jar com.grid.simulations.simworld.GraphicsRunner
