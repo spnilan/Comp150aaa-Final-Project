@@ -12,7 +12,7 @@ public class DiseaseSpread extends SimState
     protected static final double xMax = 80;
     protected static final double yMax = 60;
     protected static final int numAgents = 20;
-    protected static final Disease disease = Disease.avianFlu; 
+    protected static final Disease disease = Disease.malaria; 
 
     // Simulation data:
     protected Continuous2D environment;
@@ -50,7 +50,6 @@ public class DiseaseSpread extends SimState
     }
 
 
-
     /**
      * Starts the simulation.
      */
@@ -76,6 +75,8 @@ public class DiseaseSpread extends SimState
         foodMaker = new FoodMaker();
         schedule.scheduleRepeating(schedule.EPOCH, foodMaker, FoodMaker.stepInterval);
     }
+
+    //TODO Figure out how to take in a command line arg for disease (malaria, etc)
 
     /** Runs the simulation without a GUI. */
     public static void main(String[] args)

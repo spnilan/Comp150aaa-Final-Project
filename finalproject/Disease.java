@@ -8,6 +8,8 @@ class Disease
     protected double probInitial;
     protected double energyDrainMultiplier;
 
+    // TODO Adjust the parameters to the disease until something interesting happens
+
     // prevalent and virulent
     protected static final Disease malaria = new Disease(0.3, 0.02, 0.1, 2.0);
     
