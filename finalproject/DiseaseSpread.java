@@ -12,7 +12,7 @@ public class DiseaseSpread extends SimState
     protected static final double xMax = 80;
     protected static final double yMax = 60;
     protected static final int numAgents = 20;
-    protected static final Disease disease = new Disease(0.2, 0.2, 0.2, 1.2);
+    protected static final Disease disease = Disease.avianFlu; 
 
     // Simulation data:
     protected Continuous2D environment;
@@ -23,6 +23,33 @@ public class DiseaseSpread extends SimState
     {
         super(seed);
     }
+
+    /** Stop the simulation when all agents are dead */
+    public boolean allAgentsDead() {
+        Bag bag = environment.getAllObjects();
+        for (int i=0; i < bag.numObjs; i++) {
+            if (bag.objs[i] instanceof Agent) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Or when the disease has been eradicated */
+    public boolean allAgentsHealthy() {
+        Bag bag = environment.getAllObjects();
+        for (int i=0; i < bag.numObjs; i++) {
+            if (bag.objs[i] instanceof Agent) {
+                Agent agent = (Agent)bag.objs[i];
+                if (agent.infected) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
 
     /**
      * Starts the simulation.
