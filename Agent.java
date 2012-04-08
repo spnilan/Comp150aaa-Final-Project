@@ -39,6 +39,12 @@ public class Agent implements Steppable
         this.stepsUntilCanEat = 0;
     }
 
+    /** Returns true if the agent is satiated (cannot eat right now). */
+    public boolean isSatiated()
+    {
+        return stepsUntilCanEat > 0;
+    }
+
     /** Updates the agent at every step of the simulation. */
     public void step(final SimState state)
     {
@@ -108,14 +114,14 @@ public class Agent implements Steppable
           }
         }
         // If we can eat and we saw food, eat it.
-        if(bestItem != null && bestItem.energy > 0 && stepsUntilCanEat == 0 && sim.environment.getObjectLocation(bestItem).distance(location) <= eatingRange) {
+        if(bestItem != null && bestItem.energy > 0 && !isSatiated() && sim.environment.getObjectLocation(bestItem).distance(location) <= eatingRange) {
             energy += bestItem.energy;
             bestItem.energy = 0;
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
             System.out.println("Agent " + id + " ate");
             stepsUntilCanEat = stepsSatiated;
-        } else if(stepsUntilCanEat > 0) {
+        } else if(isSatiated()) {
             stepsUntilCanEat--;
         }
 
