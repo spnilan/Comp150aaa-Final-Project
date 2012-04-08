@@ -13,10 +13,13 @@ public class Agent implements Steppable
     protected static final double energyDrainPerStep = 10;
     protected static final double sensoryRange = 20;
     protected static final double infectionRange = 10;
+    protected static final double eatingRange = 5;
     protected static final int stepsSatiated = 10;
 
-    protected static double flockingFactor = 1.0;
+    protected static final double defaultFlockingFactor = 1.0;
+    protected static double flockingFactor;
     protected static double repulsionFactor = 1.0;
+    protected static double foodFactor = 3;
 
     // Agent data:
     public int id;
@@ -36,14 +39,19 @@ public class Agent implements Steppable
         this.stepsUntilCanEat = 0;
     }
 
+    /** Returns true if the agent is satiated (cannot eat right now). */
+    public boolean isSatiated()
+    {
+        return stepsUntilCanEat > 0;
+    }
+
     /** Updates the agent at every step of the simulation. */
     public void step(final SimState state)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
-        // Check if the agent has recovered from the disease with a 
-        // given probability at each step
-        if (infected && sim.random.nextDouble() < sim.disease.probRecovery) {
+        // Check if the agent has recovered from the disease with a
+        {
             infected = false;
         }
 
@@ -68,6 +76,7 @@ public class Agent implements Steppable
         MutableDouble2D sumForces = new MutableDouble2D();
 
         ArrayList<Agent> nearbyAgents = new ArrayList<Agent>();
+        ArrayList<Food> nearbyFood = new ArrayList<Food>();
 
         for(int i = 0; i < neighbors.numObjs; i++) {
             // Doc says getObjectsWithinDistance() may return objects outside the
@@ -81,6 +90,7 @@ public class Agent implements Steppable
                 if(bestItem == null || item.energy > bestItem.energy) {
                     bestItem = item;
                 }
+                nearbyFood.add(item);
             } else if(neighbors.objs[i] instanceof Agent) {
                 Agent agent = (Agent)neighbors.objs[i];
 
@@ -94,15 +104,24 @@ public class Agent implements Steppable
 
         }
 
+        for (Food item : nearbyFood) {
+          if (item != null) {
+            double d = sim.environment.getObjectLocation(item).distance(location);
+            MutableDouble2D force = new MutableDouble2D();
+            double factor = foodFactor / (d*d);
+            force.setTo( (sim.environment.getObjectLocation(item).x - location.x) * factor, (sim.environment.getObjectLocation(item).y - location.y) * factor);
+            sumForces.addIn(force);
+          }
+        }
         // If we can eat and we saw food, eat it.
-        if(bestItem != null && bestItem.energy > 0 && stepsUntilCanEat == 0) {
+        if(bestItem != null && bestItem.energy > 0 && !isSatiated() && sim.environment.getObjectLocation(bestItem).distance(location) <= eatingRange) {
             energy += bestItem.energy;
             bestItem.energy = 0;
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
             System.out.println("Agent " + id + " ate");
             stepsUntilCanEat = stepsSatiated;
-        } else if(stepsUntilCanEat > 0) {
+        } else if(isSatiated()) {
             stepsUntilCanEat--;
         }
 
@@ -126,8 +145,9 @@ public class Agent implements Steppable
             sumForces.addIn(force);
         }
 
-        System.out.println("Number of nearby agents: " + nearbyAgents.size());
-        System.out.println("Agent " + id + " force: [x=" + sumForces.x + ", y=" + sumForces.y + "]");
+
+        //System.out.println("Number of nearby agents: " + nearbyAgents.size());
+        //System.out.println("Agent " + id + " force: [x=" + sumForces.x + ", y=" + sumForces.y + "]");
 
         double dx, dy;
         if (sumForces.length() > 0) {

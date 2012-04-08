@@ -15,10 +15,13 @@ public class DiseaseSpreadWithUI extends GUIState
     private JFrame displayFrame;
     private ContinuousPortrayal2D envPortrayal = new ContinuousPortrayal2D();
 
-    /** Initializes GUI with a new simulation. */
-    public DiseaseSpreadWithUI()
+    /**
+     * Initializes GUI with a new simulation. Takes optional cmdline arguments;
+     * see DiseaseSpread.SimMaker.
+     */
+    public DiseaseSpreadWithUI(String[] args)
     {
-        super(new DiseaseSpread(System.currentTimeMillis()));
+        super((new DiseaseSpread.SimMaker()).newInstance(System.currentTimeMillis(), args));
     }
 
     /** Initializes GUI with an existing simulation. */
@@ -93,6 +96,6 @@ public class DiseaseSpreadWithUI extends GUIState
     /** Runs the simulation GUI. */
     public static void main(String[] args)
     {
-        new DiseaseSpreadWithUI().createController();
+        new DiseaseSpreadWithUI(args).createController();
     }
 }

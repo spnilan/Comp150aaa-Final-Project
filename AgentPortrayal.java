@@ -16,21 +16,15 @@ class AgentPortrayal extends OvalPortrayal2D
         Agent agent = (Agent)object;
         
         // draw the agent object
-        filled = true;
+        filled = false;
         paint = healthyColor;
         if(agent.infected) {
             paint = sickColor;
         }
+        if(agent.isSatiated()) {
+            filled = true;
+        }
         super.draw(object, graphics, info);
-        
-        // draw an elipse around agent showing sensory range
-        /*
-        filled = false;
-        double range = agent.sensoryRange;
-        info.draw.width = 100;
-        info.draw.height = 100;
-        super.draw(object, graphics, info);
-        */
     }
 
 }
