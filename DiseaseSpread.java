@@ -11,7 +11,7 @@ public class DiseaseSpread extends SimState
     // Simulation parameters:
     protected static final double xMax = 80;
     protected static final double yMax = 60;
-    protected static final int numAgents = 20;
+    protected static final int numAgents = 1;
     protected static final Disease disease = Disease.malaria; 
 
     // Simulation data:

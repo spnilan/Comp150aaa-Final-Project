@@ -8,7 +8,7 @@ import java.awt.*;
 class FoodPortrayal extends OvalPortrayal2D
 {
     // Portrayal parameters:
-    protected static Color color = new Color(0, 255, 0);
+    protected static final Color color = new Color(0, 255, 0);
 
     public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
     {
