@@ -10,11 +10,11 @@ public class Agent implements Steppable
 {
     // Agent parameters:
     protected static final double initialEnergy = 1000;
+    protected static final double satiatedEnergy = 1200;
     protected static final double energyDrainPerStep = 10;
     protected static final double sensoryRange = 20;
     protected static final double infectionRange = 10;
     protected static final double eatingRange = 5;
-    protected static final int stepsSatiated = 10;
 
     protected static final double foodFactor = 3.0;
     protected static final double defaultFlockingFactor = 1.0;
@@ -27,7 +27,6 @@ public class Agent implements Steppable
     public Double2D location;
     public double energy;
     public boolean infected;
-    public int stepsUntilCanEat;
     protected Stoppable scheduleItem;
 
     /** Initializes an agent with the given id and location. */
@@ -37,13 +36,12 @@ public class Agent implements Steppable
         this.location = location;
         this.energy = initialEnergy;
         this.infected = infected;
-        this.stepsUntilCanEat = 0;
     }
 
     /** Returns true if the agent is satiated (cannot eat right now). */
     public boolean isSatiated()
     {
-        return stepsUntilCanEat > 0;
+        return energy > satiatedEnergy;
     }
 
     /** Updates the agent at every step of the simulation. */
@@ -104,7 +102,6 @@ public class Agent implements Steppable
 
         // We can't eat if we are satiated.
         if(isSatiated()) {
-            stepsUntilCanEat--;
             return;
         }
 
@@ -127,7 +124,6 @@ public class Agent implements Steppable
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
             System.out.println("Agent " + id + " ate");
-            stepsUntilCanEat = stepsSatiated;
         }
     }
 
@@ -209,7 +205,9 @@ public class Agent implements Steppable
                                                         sim.random.nextDouble());
             force.normalize();
             force.multiplyIn(randomnessFactor);
-            sumForces.normalize();  // otherwise scales are meaningless
+            if(sumForces.length() > 0) {
+                sumForces.normalize();  // otherwise scales are meaningless
+            }
             sumForces.addIn(force);
         }
 
@@ -219,7 +217,7 @@ public class Agent implements Steppable
             sumForces.normalize();
         }
         sumForces.addIn(this.location);
-        System.out.println("current location: " + this.location + " new location: " + sumForces);
+        //System.out.println("current location: " + this.location + " new location: " + sumForces);
         this.location = new Double2D(sumForces);
         sim.environment.setObjectLocation(this, this.location);
     }
