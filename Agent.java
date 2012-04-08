@@ -15,7 +15,8 @@ public class Agent implements Steppable
     protected static final double infectionRange = 10;
     protected static final int stepsSatiated = 10;
 
-    protected static double flockingFactor = 1.0;
+    protected static final double defaultFlockingFactor = 1.0;
+    protected static double flockingFactor;
     protected static double repulsionFactor = 1.0;
 
     // Agent data:

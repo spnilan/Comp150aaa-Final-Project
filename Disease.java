@@ -7,28 +7,35 @@ class Disease
     protected double probRecovery;
     protected double probInitial;
     protected double energyDrainMultiplier;
-
-    // TODO Adjust the parameters to the disease until something interesting happens
-
-    // prevalent and virulent
-    protected static final Disease malaria = new Disease(0.3, 0.02, 0.1, 2.0);
-    
-    // prevalent but not virulent
-    protected static final Disease cold = new Disease(0.3, 0.2, 0.1, 1.2);
-
-    // not prevalent but virulent
-    protected static final Disease avianFlu = new Disease(0.05, 0.05, 0.1, 2.5);
+    protected String name;
 
     Disease()
     {
-        this(0.1, 0.1, 0.1, 1.2);
+        this(0.1, 0.1, 0.1, 1.2, "default");
     }
 
-    Disease(double pt, double pr, double pi, double edm)
+    Disease(double pt, double pr, double pi, double edm, String name)
     {
         this.probTransmission = pt;
         this.probRecovery = pr;
         this.probInitial = pi;
         this.energyDrainMultiplier = edm;
+        this.name = name;
+    }
+
+    static Disease diseaseByName(String name)
+    {
+        // TODO Adjust the parameters to the disease until something interesting happens
+        if(name.equals("malaria")) {
+            return new Disease(0.3, 0.02, 0.1, 2.0, "malaria"); // prevalent and virulent
+        } else if(name.equals("cold")) {
+            return new Disease(0.3, 0.2, 0.1, 1.2, "cold"); // prevalent but not virulent
+        } else if(name.equals("avian-flu")) {
+            return new Disease(0.05, 0.05, 0.1, 2.5, "avian-flu"); // not prevalent but virulent
+        } else if(name.equals("none")) {
+            return new Disease(0.0, 0.0, 0.0, 0.0, "none"); // no disease
+        } else {
+            throw new RuntimeException("Unknown disease '" + name + "'");
+        }
     }
 }
