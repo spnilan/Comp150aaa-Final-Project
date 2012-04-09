@@ -15,6 +15,9 @@ class AgentPortrayal extends OvalPortrayal2D
     protected static final Color eatingRangeColor = new Color(0, 255, 0, 30);
     protected static final Color infectionRangeColor = new Color(255, 0, 0, 40);
 
+
+    protected static final boolean displayRanges = true;
+
     // Useful for inspector
     public String getName(LocationWrapper wrapper) {
         Agent agent = (Agent)wrapper.getObject();
@@ -89,9 +92,11 @@ class AgentPortrayal extends OvalPortrayal2D
         Agent agent = (Agent)object;
 
         drawAgent(agent, graphics, info);
-        drawSensoryRange(graphics, info);
-        drawEatingRange(graphics, info);
-        drawInfectionRange(graphics, info);
+        if (displayRanges) {
+            drawSensoryRange(graphics, info);
+            drawEatingRange(graphics, info);
+            drawInfectionRange(graphics, info);
+        }
     }
 
 }
