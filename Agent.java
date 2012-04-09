@@ -84,6 +84,18 @@ public class Agent implements Steppable
                 nearbyAgents.add((Agent)neighbors.objs[i]);
             }
         }
+       
+        /* 
+        System.out.println("Agent " + id + " sees " + nearbyFood.size() + " food");
+        String s = new String("Agent " + id + " sees ");
+        if (nearbyAgents.size() == 0) {
+            s += "no agents";
+        }
+        for (Agent other : nearbyAgents) {
+            s += " " + other.id + ",";
+        }
+        System.out.println(s); 
+        */
 
         // Take appropriate actions. These are factored out into different
         // functions for readability.

@@ -57,8 +57,7 @@ public class DiseaseSpreadWithUI extends GUIState
 
         // tell the portrayals what to portray and how to portray them
         envPortrayal.setField(sim.environment);
-        envPortrayal.setPortrayalForClass(Agent.class, new CircledPortrayal2D(
-                                                                new AgentPortrayal()));
+        envPortrayal.setPortrayalForClass(Agent.class, new AgentPortrayal());
         envPortrayal.setPortrayalForClass(Food.class, new FoodPortrayal());
 
         // reschedule the displayer
