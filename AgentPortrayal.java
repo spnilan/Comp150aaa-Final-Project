@@ -11,9 +11,9 @@ class AgentPortrayal extends OvalPortrayal2D
     protected static final Color healthyColor = new Color(0, 0, 127);
     protected static final Color sickColor  = new Color(255, 0, 0);
 
-    protected static final Color sensoryRangeColor = new Color(124, 140, 30, 15);
-    protected static final Color eatingRangeColor = new Color(0, 255, 0, 15);
-    protected static final Color infectionRangeColor = new Color(255, 0, 0, 15);
+    protected static final Color sensoryRangeColor = new Color(124, 140, 130, 30);
+    protected static final Color eatingRangeColor = new Color(0, 255, 0, 30);
+    protected static final Color infectionRangeColor = new Color(255, 0, 0, 40);
 
     // Useful for inspector
     public String getName(LocationWrapper wrapper) {
