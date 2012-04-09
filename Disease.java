@@ -27,11 +27,11 @@ class Disease
     {
         // TODO Adjust the parameters to the disease until something interesting happens
         if(name.equals("malaria")) {
-            return new Disease(0.3, 0.02, 0.1, 2.0, "malaria"); // prevalent and virulent
+            return new Disease(0.3, 0.05, 0.25, 2.0, "malaria"); // prevalent and virulent
         } else if(name.equals("cold")) {
-            return new Disease(0.3, 0.2, 0.1, 1.2, "cold"); // prevalent but not virulent
+            return new Disease(0.66, 0.2, 0.33, 1.2, "cold"); // prevalent but not virulent
         } else if(name.equals("avian-flu")) {
-            return new Disease(0.05, 0.05, 0.1, 2.5, "avian-flu"); // not prevalent but virulent
+            return new Disease(0.5, 0.01, 0.1, 5, "avian-flu"); // not prevalent but virulent
         } else if(name.equals("none")) {
             return new Disease(0.0, 0.0, 0.0, 0.0, "none"); // no disease
         } else {
