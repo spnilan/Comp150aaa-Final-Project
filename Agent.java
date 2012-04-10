@@ -16,11 +16,14 @@ public class Agent implements Steppable
     protected static final double infectionRange = 10;
     protected static final double eatingRange = 5;
 
-    protected static final double foodFactor = 3.0;
-    protected static final double defaultFlockingFactor = 1.0;
+    protected static final double foodFactor = 1.0;
+    protected static final double defaultFlockingFactor = 0.7;
     protected static double flockingFactor;
-    protected static final double repulsionFactor = 1.0;
-    protected static final double randomnessFactor = 0.2;
+    protected static final double repulsionFactor = 0.8;
+    protected static final double randomnessFactor = 0.1;
+    protected static final double orientationFactor = 1.1;
+        
+    protected static final double minDistance = 0.5; 
 
     // Agent data:
     public int id;
@@ -28,6 +31,13 @@ public class Agent implements Steppable
     public double energy;
     public boolean infected;
     protected Stoppable scheduleItem;
+    
+    public Double2D orientation;
+
+    // agent behavior
+    protected static boolean avoidSick = true;
+    protected static boolean flocking = true;
+    protected static boolean avoidEveryone = false;
 
     /** Initializes an agent with the given id and location. */
     public Agent(int id, Double2D location, boolean infected)
@@ -36,6 +46,7 @@ public class Agent implements Steppable
         this.location = location;
         this.energy = initialEnergy;
         this.infected = infected;
+        this.orientation = new Double2D();
     }
 
     /** Returns true if the agent is satiated (cannot eat right now). */
@@ -182,7 +193,54 @@ public class Agent implements Steppable
                           ArrayList<Agent> nearbyAgents)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
-        MutableDouble2D sumForces = new MutableDouble2D();
+
+        MutableDouble2D avgOrientation = new MutableDouble2D(this.orientation),
+                        foodAttraction = new MutableDouble2D(),
+                        agentAttraction = new MutableDouble2D(),
+                        agentRepulsion = new MutableDouble2D();
+
+        // primary factor is the orientation of our neighbors if flocking
+        if (flocking) {
+            MutableDouble2D sumOrientation = new MutableDouble2D();
+            for (Agent other : nearbyAgents) {
+                double d = other.location.distance(this.location); 
+                if (d < minDistance) {
+                    d = minDistance;
+                }
+                Double2D force = other.orientation.multiply(1.0 / (d * d));
+                sumOrientation.addIn(force);
+            }
+
+            avgOrientation.addIn(sumOrientation.multiplyIn(0.7));
+        }
+      
+
+        // agent attraction / repulsion
+        for (Agent other : nearbyAgents) {
+            Double2D force;
+            double d = other.location.distance(this.location);
+            if (d < minDistance) {
+                d = minDistance;
+            }
+
+            if (avoidEveryone) {
+                force = this.location.subtract(other.location).multiply(1.0 / (d * d));    
+                agentRepulsion.addIn(force);
+            }
+            else if (other.infected) {
+                if (avoidSick) {
+                    force = this.location.subtract(other.location).multiply(1.0 / (d * d));
+                    agentRepulsion.addIn(force);    
+                } else if (flocking) {
+                    force = other.location.subtract(this.location).multiply(1.0 / (d * d));
+                    agentAttraction.addIn(force);
+                }
+            } else if (flocking) {
+                force = other.location.subtract(this.location).multiply(1.0 / (d * d));
+                agentAttraction.addIn(force);
+            }
+        }
+
 
         // We are attracted to food.
         for (Food item : nearbyFood) {
@@ -191,43 +249,47 @@ public class Agent implements Steppable
                 continue;
             }
             double d = itemLoc.distance(this.location);
-            Double2D force = itemLoc.subtract(this.location).multiply(foodFactor / (d * d));
-            // TODO take into account energy of food?
-            sumForces.addIn(force);
+            if (d < minDistance) {
+                d = minDistance;
+            }
+            Double2D force = itemLoc.subtract(this.location).multiply(item.energy / (d * d));
+            foodAttraction.addIn(force);
         }
 
-        // We are attracted to healthy agents and repelled by infected agents.
-        // TODO figure out if we need more specific cases, e.g. if (this) is a
-        // health agent or an infected agent.
-        // FIXME this doesn't work very well; need to replace it with some
-        // better flocking behavior.
-        for (Agent other : nearbyAgents) {
-            double d = other.location.distance(this.location);
-            double factor = flockingFactor / (d * d);
-            if(other.infected) {
-                factor = -repulsionFactor / (d * d);
-            }
-            Double2D force = other.location.subtract(this.location).multiply(factor);
-            sumForces.addIn(force);
+        MutableDouble2D randomDirection = new MutableDouble2D(sim.random.nextDouble(), sim.random.nextDouble());
+        randomDirection.normalize();
+        
+        if (avgOrientation.length() > 0) {
+            avgOrientation.normalize();
+        }
+        if (foodAttraction.length() > 0) {
+            foodAttraction.normalize();
+        }
+        if (agentAttraction.length() > 0) {
+            agentAttraction.normalize();
+        }
+        if (agentRepulsion.length() > 0) {
+            agentRepulsion.normalize();
         }
 
-        // Add some randomness.
-        {
-            MutableDouble2D force = new MutableDouble2D(sim.random.nextDouble(),
-                                                        sim.random.nextDouble());
-            force.normalize();
-            force.multiplyIn(randomnessFactor);
-            if(sumForces.length() > 0) {
-                sumForces.normalize();  // otherwise scales are meaningless
-            }
-            sumForces.addIn(force);
-        }
+        MutableDouble2D sumForces = new MutableDouble2D();
+        
+        sumForces.addIn(
+                avgOrientation.multiplyIn(orientationFactor)).addIn(
+                foodAttraction.multiplyIn(foodFactor)).addIn(
+                agentAttraction.multiplyIn(flockingFactor)).addIn(
+                agentRepulsion.multiplyIn(repulsionFactor)).addIn(
+                randomDirection.multiplyIn(randomnessFactor));
+                
 
         // Move to the location given by the sum of forces.
         // Careful, need to setObjectLocation and *also* update this.location.
         if(sumForces.length() > 0) {
             sumForces.normalize();
         }
+
+        this.orientation = new Double2D(sumForces);
+
         sumForces.addIn(this.location);
         //System.out.println("current location: " + this.location + " new location: " + sumForces);
         this.location = new Double2D(sumForces);
