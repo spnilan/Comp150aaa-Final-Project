@@ -17,13 +17,13 @@ public class Agent implements Steppable
     protected static final double eatingRange = 5;
 
     protected static final double foodFactor = 1.0;
-    protected static final double defaultFlockingFactor = 0.7;
+    protected static final double defaultFlockingFactor = 1.7;
     protected static double flockingFactor;
-    protected static final double repulsionFactor = 0.8;
-    protected static final double randomnessFactor = 0.1;
-    protected static final double orientationFactor = 1.1;
-        
-    protected static final double minDistance = 0.5; 
+    protected static final double repulsionFactor = 1.8;
+    protected static final double randomnessFactor = 0.2;
+    protected static final double orientationFactor = 2.1;
+    protected static final double separationDistance = 8;
+    protected static final double minDistance = 1;
 
     // Agent data:
     public int id;
@@ -36,7 +36,7 @@ public class Agent implements Steppable
 
     // agent behavior
     protected static boolean avoidSick = true;
-    protected static boolean flocking = true;
+    protected static boolean flocking = false;
     protected static boolean avoidEveryone = false;
 
     /** Initializes an agent with the given id and location. */
@@ -196,7 +196,7 @@ public class Agent implements Steppable
 
         MutableDouble2D avgOrientation = new MutableDouble2D(this.orientation),
                         foodAttraction = new MutableDouble2D(),
-                        agentAttraction = new MutableDouble2D(),
+                        flockAttraction = new MutableDouble2D(),
                         agentRepulsion = new MutableDouble2D();
 
         // primary factor is the orientation of our neighbors if flocking
@@ -210,7 +210,9 @@ public class Agent implements Steppable
                 Double2D force = other.orientation.multiply(1.0 / (d * d));
                 sumOrientation.addIn(force);
             }
-
+            if (sumOrientation.length() > 0) {
+                sumOrientation.normalize();
+            }
             avgOrientation.addIn(sumOrientation.multiplyIn(0.7));
         }
       
@@ -219,41 +221,51 @@ public class Agent implements Steppable
         for (Agent other : nearbyAgents) {
             Double2D force;
             double d = other.location.distance(this.location);
-            if (d < minDistance) {
-                d = minDistance;
-            }
+            //if (d < minDistance) {
+            //    d = minDistance;
+            //}
 
             if (avoidEveryone) {
                 force = this.location.subtract(other.location).multiply(1.0 / (d * d));    
                 agentRepulsion.addIn(force);
             }
-            else if (other.infected) {
-                if (avoidSick) {
-                    force = this.location.subtract(other.location).multiply(1.0 / (d * d));
-                    agentRepulsion.addIn(force);    
-                } else if (flocking) {
-                    force = other.location.subtract(this.location).multiply(1.0 / (d * d));
-                    agentAttraction.addIn(force);
-                }
-            } else if (flocking) {
+            else if (other.infected && avoidSick) {
+                force = this.location.subtract(other.location).multiply(1.0 / (d * d));
+                agentRepulsion.addIn(force);
+            }
+            else if (flocking) {
                 force = other.location.subtract(this.location).multiply(1.0 / (d * d));
-                agentAttraction.addIn(force);
+                if (d <= separationDistance) {
+                   agentRepulsion.addIn(force.multiply(-1));
+                }
+                else {
+                    flockAttraction.addIn(force);
+                }
             }
         }
 
 
         // We are attracted to food.
+        boolean foundFood = false;
         for (Food item : nearbyFood) {
             Double2D itemLoc = sim.environment.getObjectLocation(item);
             if(itemLoc == null) {  // this may be null if we just ate the item
                 continue;
             }
+            foundFood = true;
             double d = itemLoc.distance(this.location);
             if (d < minDistance) {
                 d = minDistance;
             }
             Double2D force = itemLoc.subtract(this.location).multiply(item.energy / (d * d));
             foodAttraction.addIn(force);
+        }
+
+        // if no food in range, put force towards center of screen
+        // otherwise agents will just keep heading out of bounds
+        if (foundFood == false) {
+            Double2D center = new Double2D(sim.xMax / 2, sim.yMax / 2);
+            foodAttraction.addIn(center.subtract(this.location));
         }
 
         MutableDouble2D randomDirection = new MutableDouble2D(sim.random.nextDouble(), sim.random.nextDouble());
@@ -265,8 +277,8 @@ public class Agent implements Steppable
         if (foodAttraction.length() > 0) {
             foodAttraction.normalize();
         }
-        if (agentAttraction.length() > 0) {
-            agentAttraction.normalize();
+        if (flockAttraction.length() > 0) {
+            flockAttraction.normalize();
         }
         if (agentRepulsion.length() > 0) {
             agentRepulsion.normalize();
@@ -276,8 +288,8 @@ public class Agent implements Steppable
         
         sumForces.addIn(
                 avgOrientation.multiplyIn(orientationFactor)).addIn(
-                foodAttraction.multiplyIn(foodFactor)).addIn(
-                agentAttraction.multiplyIn(flockingFactor)).addIn(
+                foodAttraction.multiplyIn(foodFactor * satiatedEnergy / energy)).addIn(
+                flockAttraction.multiplyIn(flockingFactor)).addIn(
                 agentRepulsion.multiplyIn(repulsionFactor)).addIn(
                 randomDirection.multiplyIn(randomnessFactor));
                 

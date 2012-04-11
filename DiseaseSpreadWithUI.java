@@ -1,3 +1,4 @@
+import sim.portrayal.*;
 import sim.portrayal.continuous.*;
 import sim.portrayal.simple.*;
 import sim.engine.*;

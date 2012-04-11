@@ -8,7 +8,7 @@ public class FoodMaker implements Steppable
 {
     // Food-maker parameters:
     protected static final double stepInterval = 15;
-    protected static final int spawnCount = 30;
+    protected static final int spawnCount = 15;
 
     /**
      * Creates spawnCount food items and adds them to the environment and the
