@@ -2,35 +2,28 @@ import sim.engine.*;
 import sim.util.Double2D;
 
 /**
- * An "agent" that creates food and adds it to the environment.
+ * An "agent" that creates food and adds it to the environment. The FoodMaker
+ * tries to achieve conservation of energy. It always tries to maintain
+ * numAgentsAlive * targetEnergyPerAgent total energy in the simulation.
  */
 public class FoodMaker implements Steppable
 {
     // Food-maker parameters:
+    protected static final double targetEnergyPerAgent = Agent.initialEnergy * 1.5;
     protected static final double energyDeficitThreshold = 1000;
     protected static final int spawnCount = 15;
     protected static final double clusterVariance = 3;
 
-    // Food-maker data:
-    protected double totalEnergyTarget;
-
     /**
-     * Creates a FoodMaker that tries to maintain the given totalEnergyTarget.
-     */
-    public FoodMaker(double totalEnergyTarget)
-    {
-        this.totalEnergyTarget = totalEnergyTarget;
-    }
-
-    /**
-     * If the totalEnergy of the simulation is smaller than totalEnergyTarget by
-     * more than energyDeficitThreshold, creates spawnCount food items and adds
-     * them to the environment and the schedule.
+     * If the totalEnergy of the simulation is smaller than numAgentsAlive *
+     * targetEnergyPerAgent by more than energyDeficitThreshold, creates
+     * spawnCount food items and adds them to the environment and the schedule.
      */
     public void step(final SimState state)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
+        double totalEnergyTarget = sim.getAgentsAlive() * targetEnergyPerAgent;
         if(totalEnergyTarget - sim.totalEnergy > energyDeficitThreshold) {
             // Spawn new food items in a Gaussian cluster.
             double cx = sim.random.nextDouble() * sim.xMax,
