@@ -37,6 +37,20 @@ public class DiseaseSpreadWithUI extends GUIState
         return "DiseaseSpread";
     }
 
+    /** Returns simulation object for GUI inspector. */
+    public Object getSimulationInspectedObject()
+    {
+        return state;
+    }
+
+    /** Returns inspector that updates at every time step (slow). */
+    public Inspector getInspector()
+    {
+        Inspector i = super.getInspector();
+        i.setVolatile(true);  // update at every step
+        return i;
+    }
+
     /** Starts the simulation ("play" button). */
     public void start()
     {

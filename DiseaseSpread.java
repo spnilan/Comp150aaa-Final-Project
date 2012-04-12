@@ -11,27 +11,29 @@ public class DiseaseSpread extends SimState
     // Simulation parameters:
     protected static final double xMax = 80;
     protected static final double yMax = 60;
-    protected static final int defaultNumAgents = 20;
-    protected static int numAgents;
+    protected static final int defaultNumAgentsInitial = 20;
+    protected static int numAgentsInitial;
     protected static final Disease defaultDisease = Disease.diseaseByName("malaria");
     protected static Disease disease;
 
     // Simulation data:
     protected Continuous2D environment;
     protected FoodMaker foodMaker;
+    protected int numAgentsAlive;
+    protected int numAgentsInfected;
 
     /**
      * Creates a DiseaseSpread simulation with the given random number seed,
      * number of agents, disease type, and flocking factor.
      */
-    public DiseaseSpread(long seed, int numAgents, Disease disease,
+    public DiseaseSpread(long seed, int numAgentsInitial, Disease disease,
                          double flockingFactor)
     {
         super(seed);
-        System.out.println("DiseaseSpread: seed=" + seed + " numAgents=" +
-                           numAgents + " disease=" + disease.name +
+        System.out.println("DiseaseSpread: seed=" + seed + " numAgentsInitial=" +
+                           numAgentsInitial + " disease=" + disease.name +
                            " flockingFactor=" + flockingFactor);
-        this.numAgents = numAgents;
+        this.numAgentsInitial = numAgentsInitial;
         this.disease = disease;
         Agent.flockingFactor = flockingFactor;
     }
@@ -61,6 +63,23 @@ public class DiseaseSpread extends SimState
         return true;
     }
 
+    /** Returns number of living agents. */
+    public int getAgentsAlive()
+    {
+        return numAgentsAlive;
+    }
+
+    /** Returns number of healthy agents. */
+    public int getAgentsHealthy()
+    {
+        return numAgentsAlive - numAgentsInfected;
+    }
+
+    /** Returns number of infected agents. */
+    public int getAgentsInfected()
+    {
+        return numAgentsInfected;
+    }
 
     /**
      * Starts the simulation.
@@ -73,14 +92,18 @@ public class DiseaseSpread extends SimState
         environment = new Continuous2D(25.0, xMax, yMax);
 
         // Create and schedule agents.
-        int addedAgents = 0;
-        while(addedAgents < numAgents) {
+        numAgentsAlive = 0;
+        numAgentsInfected = 0;
+        while(numAgentsAlive < numAgentsInitial) {
             Double2D loc = new Double2D(random.nextDouble() * xMax, random.nextDouble() * yMax);
             boolean infected = (random.nextDouble() < disease.probInitial);
-            Agent agent = new Agent(addedAgents, loc, infected);
+            Agent agent = new Agent(numAgentsAlive, loc, infected);
             environment.setObjectLocation(agent, loc);
             agent.scheduleItem = schedule.scheduleRepeating(agent); // default interval=1.0
-            addedAgents++;
+            numAgentsAlive++;
+            if(infected) {
+                numAgentsInfected++;
+            }
         }
 
         // Create and schedule a FoodMaker.
@@ -111,13 +134,13 @@ public class DiseaseSpread extends SimState
         public SimState newInstance(long seed, String[] args)
         {
             // We use defaults for any parameters that are not provided.
-            int numAgents = DiseaseSpread.defaultNumAgents;
+            int numAgentsInitial = DiseaseSpread.defaultNumAgentsInitial;
             Disease disease = DiseaseSpread.defaultDisease;
             double flockingFactor = Agent.defaultFlockingFactor;
 
             String sna = argumentForKey("-num", args);
             if(sna != null) {
-                numAgents = Integer.parseInt(sna);
+                numAgentsInitial = Integer.parseInt(sna);
             }
 
             String sdn = argumentForKey("-disease", args);
@@ -130,7 +153,7 @@ public class DiseaseSpread extends SimState
                 flockingFactor = Double.parseDouble(sff);
             }
 
-            return new DiseaseSpread(seed, numAgents, disease, flockingFactor);
+            return new DiseaseSpread(seed, numAgentsInitial, disease, flockingFactor);
         }
 
         public Class simulationClass()

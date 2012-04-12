@@ -83,6 +83,10 @@ public class Agent implements Steppable
             sim.environment.remove(this);
             scheduleItem.stop();
             System.out.println("Agent " + id + " died");
+            sim.numAgentsAlive--;
+            if(infected) {
+                sim.numAgentsInfected--;
+            }
             return;
         }
 
@@ -176,6 +180,7 @@ public class Agent implements Steppable
             if(sim.random.nextDouble() <= sim.disease.probRecovery) {
                 infected = false;
                 System.out.println("Agent " + id + " recovered");
+                sim.numAgentsInfected--;
             }
         } else {
             // Figure out if there is an infected agent nearby.
@@ -191,6 +196,7 @@ public class Agent implements Steppable
             if(foundInfected && sim.random.nextDouble() <= sim.disease.probTransmission) {
                 infected = true;
                 System.out.println("Agent " + id + " got infected");
+                sim.numAgentsInfected++;
             }
         }
     }
