@@ -17,11 +17,12 @@ public class Agent implements Steppable
     protected static final double eatingRange = 1;
 
     protected static final double foodFactor = 1.0;
-    protected static final double defaultFlockingFactor = 1.7;
+    protected static final double defaultFlockingFactor = 1.5;
     protected static double flockingFactor;
-    protected static final double repulsionFactor = 1.8;
+    protected static double flockRepulsionFactor = 0.7;
+    protected static final double repulsionFactor = 1.1;
     protected static final double randomnessFactor = 0.2;
-    protected static final double orientationFactor = 2.1;
+    protected static final double orientationFactor = 1.4;
     protected static final double separationDistance = 8;
     protected static final double minDistance = 1;
 
@@ -36,7 +37,6 @@ public class Agent implements Steppable
 
     // agent behavior
     protected static boolean avoidSick = true;
-    protected static boolean flocking = false;
     protected static boolean avoidEveryone = false;
 
     /** Initializes an agent with the given id and location. */
@@ -218,49 +218,51 @@ public class Agent implements Steppable
         MutableDouble2D avgOrientation = new MutableDouble2D(this.orientation),
                         foodAttraction = new MutableDouble2D(),
                         flockAttraction = new MutableDouble2D(),
+                        flockRepulsion = new MutableDouble2D(),
                         agentRepulsion = new MutableDouble2D();
 
         // primary factor is the orientation of our neighbors if flocking
-        if (flocking) {
-            MutableDouble2D sumOrientation = new MutableDouble2D();
-            for (Agent other : nearbyAgents) {
-                double d = other.location.distance(this.location); 
-                if (d < minDistance) {
-                    d = minDistance;
-                }
-                Double2D force = other.orientation.multiply(1.0 / (d * d));
-                sumOrientation.addIn(force);
+        MutableDouble2D sumOrientation = new MutableDouble2D();
+        for (Agent other : nearbyAgents) {
+            double d = other.location.distance(this.location); 
+            if (d < minDistance) {
+                d = minDistance;
             }
-            if (sumOrientation.length() > 0) {
-                sumOrientation.normalize();
-            }
-            avgOrientation.addIn(sumOrientation.multiplyIn(0.7));
+            Double2D force = other.orientation.multiply(1.0 / (d * d));
+            sumOrientation.addIn(force);
         }
+        if (sumOrientation.length() > 0) {
+            sumOrientation.normalize();
+        }
+        avgOrientation.addIn(sumOrientation.multiplyIn(0.7));
       
 
         // agent attraction / repulsion
         for (Agent other : nearbyAgents) {
             Double2D force;
             double d = other.location.distance(this.location);
-            //if (d < minDistance) {
-            //    d = minDistance;
-            //}
+            if (d < minDistance) {
+                d = minDistance;
+            }
 
             if (avoidEveryone) {
-                force = this.location.subtract(other.location).multiply(1.0 / (d * d));    
+                force = this.location.subtract(other.location).normalize().multiply(1.0 / (d * d));    
                 agentRepulsion.addIn(force);
             }
             else if (other.infected && avoidSick) {
-                force = this.location.subtract(other.location).multiply(1.0 / (d * d));
+                force = this.location.subtract(other.location).normalize().multiply(1.0 / (d * d));
                 agentRepulsion.addIn(force);
             }
-            else if (flocking) {
-                force = other.location.subtract(this.location).multiply(1.0 / (d * d));
+            else if (flockingFactor > 0){
+
+                force = other.location.subtract(this.location).normalize();
+                double dot = force.dot(this.orientation);
+                // if leading the other agent
                 if (d <= separationDistance) {
-                   agentRepulsion.addIn(force.multiply(-1));
+                    flockRepulsion.addIn(force.multiply(-1 / (d * d)));
                 }
-                else {
-                    flockAttraction.addIn(force);
+                else if (dot > 0) {
+                    flockAttraction.addIn(force.multiply(dot / (d * d)));
                 }
             }
         }
@@ -275,10 +277,17 @@ public class Agent implements Steppable
             }
             foundFood = true;
             double d = itemLoc.distance(this.location);
-            if (d < minDistance) {
-                d = minDistance;
+
+            double penaltyFactor = 1;
+            for (Agent other : nearbyAgents) {
+                double dother = itemLoc.distance(other.location);
+                // if agent is closer, invoke a penalty on the food
+                if (dother <= d) {
+                    penaltyFactor += (d - dother);
+                }
             }
-            Double2D force = itemLoc.subtract(this.location).multiply(item.energy / (d * d));
+
+            Double2D force = itemLoc.subtract(this.location).normalize().multiply(item.energy / (d * d * penaltyFactor));
             foodAttraction.addIn(force);
         }
 
@@ -301,6 +310,9 @@ public class Agent implements Steppable
         if (flockAttraction.length() > 0) {
             flockAttraction.normalize();
         }
+        if (flockRepulsion.length() > 0) {
+            flockRepulsion.normalize();
+        }
         if (agentRepulsion.length() > 0) {
             agentRepulsion.normalize();
         }
@@ -311,6 +323,7 @@ public class Agent implements Steppable
                 avgOrientation.multiplyIn(orientationFactor)).addIn(
                 foodAttraction.multiplyIn(foodFactor * satiatedEnergy / energy)).addIn(
                 flockAttraction.multiplyIn(flockingFactor)).addIn(
+                flockRepulsion.multiplyIn(flockRepulsionFactor * flockingFactor)).addIn(
                 agentRepulsion.multiplyIn(repulsionFactor)).addIn(
                 randomDirection.multiplyIn(randomnessFactor));
                 

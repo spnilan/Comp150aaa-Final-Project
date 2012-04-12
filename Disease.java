@@ -33,7 +33,7 @@ class Disease
         } else if(name.equals("avian-flu")) {
             return new Disease(0.5, 0.01, 0.1, 5, "avian-flu"); // not prevalent but virulent
         } else if(name.equals("none")) {
-            return new Disease(0.0, 0.0, 0.0, 0.0, "none"); // no disease
+            return new Disease(0.0, 0.0, 0.0, 1.0, "none"); // no disease
         } else {
             throw new RuntimeException("Unknown disease '" + name + "'");
         }
