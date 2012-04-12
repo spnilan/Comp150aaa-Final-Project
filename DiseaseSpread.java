@@ -135,8 +135,8 @@ public class DiseaseSpread extends SimState
         }
 
         // Create and schedule a FoodMaker.
-        foodMaker = new FoodMaker();
-        schedule.scheduleRepeating(schedule.EPOCH, foodMaker, FoodMaker.stepInterval);
+        foodMaker = new FoodMaker(totalEnergy * 2);
+        schedule.scheduleRepeating(foodMaker); // default interval=1.0
     }
 
     /**
