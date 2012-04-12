@@ -1,0 +1,13 @@
+Classpath:
+-------------
+Add the following to your ~/.bashrc to get Mason + charting to work:
+
+# Mason simulator:
+MASON_PROJ_LOC=### put here the path to the project directory, e.g. /home/cberzan/comp150, not /home/cberzan/comp150/mason
+export CLASSPATH=$CLASSPATH:.:$MASON_PROJ_LOC/mason/jar/mason.16.jar:$MASON_PROJ_LOC/jfreechart-1.0.14/lib/jcommon-1.0.17.jar:$MASON_PROJ_LOC/jfreechart-1.0.14/lib/jfreechart-1.0.14.jar:$MASON_PROJ_LOC/jfreechart-1.0.14/lib/iText-2.1.5.jar
+
+If you're using another shell, you'll have to use the appropriate command (like
+setenv instead of export).
+
+JFreeChart comes with a gnujaxp.jar, which is some old XML thingy which breaks
+java preferences... Don't put it in your classpath.
