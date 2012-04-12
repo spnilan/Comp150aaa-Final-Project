@@ -78,9 +78,10 @@ public class Agent implements Steppable
         if(infected) {
             drain *= sim.disease.energyDrainMultiplier;
         }
+        double actualDrain = Math.min(drain, energy);
         energy -= drain;
-        sim.totalEnergy -= drain;
-        sim.totalEnergyAgents -= drain;
+        sim.totalEnergy -= actualDrain;
+        sim.totalEnergyAgents -= actualDrain;
         if(energy <= 0) {
             sim.environment.remove(this);
             scheduleItem.stop();
@@ -291,14 +292,8 @@ public class Agent implements Steppable
             foodAttraction.addIn(force);
         }
 
-        // if no food in range, put force towards center of screen
-        // otherwise agents will just keep heading out of bounds
-        if (foundFood == false) {
-            Double2D center = new Double2D(sim.xMax / 2, sim.yMax / 2);
-            foodAttraction.addIn(center.subtract(this.location));
-        }
-
-        MutableDouble2D randomDirection = new MutableDouble2D(sim.random.nextDouble(), sim.random.nextDouble());
+        MutableDouble2D randomDirection = new MutableDouble2D(
+                sim.random.nextDouble() - 0.5, sim.random.nextDouble() - 0.5);
         randomDirection.normalize();
         
         if (avgOrientation.length() > 0) {
@@ -317,8 +312,15 @@ public class Agent implements Steppable
             agentRepulsion.normalize();
         }
 
+        // If we don't see anything, then avgOrientation will dominate
+        // randomDirection, and we will keep moving in the same direction
+        // forever. To avoid this, if we don't see anything, we randomly set
+        // avgOrientation to zero with a 1/10 probability.
+        if (nearbyFood.isEmpty() && nearbyAgents.isEmpty() && sim.random.nextDouble() < 0.1) {
+            avgOrientation.zero();
+        }
+
         MutableDouble2D sumForces = new MutableDouble2D();
-        
         sumForces.addIn(
                 avgOrientation.multiplyIn(orientationFactor)).addIn(
                 foodAttraction.multiplyIn(foodFactor * satiatedEnergy / energy)).addIn(
@@ -326,18 +328,29 @@ public class Agent implements Steppable
                 flockRepulsion.multiplyIn(flockRepulsionFactor * flockingFactor)).addIn(
                 agentRepulsion.multiplyIn(repulsionFactor)).addIn(
                 randomDirection.multiplyIn(randomnessFactor));
-                
-
-        // Move to the location given by the sum of forces.
-        // Careful, need to setObjectLocation and *also* update this.location.
+        /*
+        System.out.println("sumForces:");
+        System.out.println("avgOrientation: " + avgOrientation);
+        System.out.println("foodAttraction: " + foodAttraction);
+        System.out.println("flockAttraction: " + flockAttraction);
+        System.out.println("agentRepulsion: " + agentRepulsion);
+        System.out.println("randomDirection: " + randomDirection);
+        System.out.println("sum == " + sumForces);
+        */
         if(sumForces.length() > 0) {
             sumForces.normalize();
         }
+        // System.out.println("normalized sum == " + sumForces);
 
+        // Move to the location given by the sum of forces.
+        // Careful, need to setObjectLocation and *also* update this.location.
+        // System.out.println("current orientation: " + this.orientation +
+        //                    " new orientation: " + sumForces);
         this.orientation = new Double2D(sumForces);
-
         sumForces.addIn(this.location);
-        //System.out.println("current location: " + this.location + " new location: " + sumForces);
+        sumForces.x = DiseaseSpread.clamp(sumForces.x, 0, DiseaseSpread.xMax);
+        sumForces.y = DiseaseSpread.clamp(sumForces.y, 0, DiseaseSpread.yMax);
+        // System.out.println("current location: " + this.location + " new location: " + sumForces);
         this.location = new Double2D(sumForces);
         sim.environment.setObjectLocation(this, this.location);
     }
