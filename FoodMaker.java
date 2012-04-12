@@ -10,7 +10,7 @@ public class FoodMaker implements Steppable
 {
     // Food-maker parameters:
     protected static final double targetEnergyPerAgent = Agent.initialEnergy * 1.5;
-    protected static final double energyDeficitThreshold = 1000;
+    protected static final double energyDeficitThreshold = 500;
     protected static final int spawnCount = 15;
     protected static final double clusterVariance = 3;
 
