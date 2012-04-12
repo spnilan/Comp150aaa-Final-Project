@@ -236,38 +236,39 @@ public class Agent implements Steppable
             sumOrientation.normalize();
         }
         avgOrientation.addIn(sumOrientation.multiplyIn(0.7));
-      
 
         // agent attraction / repulsion
         for (Agent other : nearbyAgents) {
-            Double2D force;
+            Double2D force, direction;
             double d = other.location.distance(this.location);
             if (d < minDistance) {
                 d = minDistance;
             }
 
-            if (avoidEveryone) {
-                force = this.location.subtract(other.location).normalize().multiply(1.0 / (d * d));    
-                agentRepulsion.addIn(force);
-            }
-            else if (other.infected && avoidSick) {
-                force = this.location.subtract(other.location).normalize().multiply(1.0 / (d * d));
-                agentRepulsion.addIn(force);
-            }
-            else if (flockingFactor > 0){
-
-                force = other.location.subtract(this.location).normalize();
-                double dot = force.dot(this.orientation);
-                // if leading the other agent
-                if (d <= separationDistance) {
-                    flockRepulsion.addIn(force.multiply(-1 / (d * d)));
+            direction = other.location.subtract(this.location);
+            if (direction.length() > 0) {
+                if (avoidEveryone) {
+                    force = direction.normalize().multiply(-1.0 / (d * d));    
+                    agentRepulsion.addIn(force);
                 }
-                else if (dot > 0) {
-                    flockAttraction.addIn(force.multiply(dot / (d * d)));
+                else if (other.infected && avoidSick) {
+                    force = direction.normalize().multiply(-1.0 / (d * d));
+                    agentRepulsion.addIn(force);
+                }
+                else if (flockingFactor > 0){
+                    double dot = direction.normalize().dot(this.orientation);
+                    // if leading the other agent
+                    if (d <= separationDistance) {
+                        force = direction.normalize().multiply(-1 / (d * d));
+                        flockRepulsion.addIn(force);
+                    }
+                    else if (dot > 0) {
+                        force = direction.normalize().multiply(dot / (d * d));
+                        flockAttraction.addIn(force);
+                    }
                 }
             }
         }
-
 
         // We are attracted to food.
         boolean foundFood = false;
@@ -287,9 +288,12 @@ public class Agent implements Steppable
                     penaltyFactor += (d - dother);
                 }
             }
-
-            Double2D force = itemLoc.subtract(this.location).normalize().multiply(item.energy / (d * d * penaltyFactor));
-            foodAttraction.addIn(force);
+            
+            Double2D direction = itemLoc.subtract(this.location);
+            if (direction.length() > 0) {
+                Double2D force = direction.normalize().multiply(item.energy / (d * d * penaltyFactor));
+                foodAttraction.addIn(force);
+            }
         }
 
         MutableDouble2D randomDirection = new MutableDouble2D(
