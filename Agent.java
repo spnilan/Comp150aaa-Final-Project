@@ -14,7 +14,7 @@ public class Agent implements Steppable
     protected static final double energyDrainPerStep = 10;
     protected static final double sensoryRange = 20;
     protected static final double infectionRange = 10;
-    protected static final double eatingRange = 5;
+    protected static final double eatingRange = 1;
 
     protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 1.7;
