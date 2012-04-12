@@ -341,6 +341,10 @@ public class Agent implements Steppable
         System.out.println("randomDirection: " + randomDirection);
         System.out.println("sum == " + sumForces);
         */
+
+        // Move to the location given by the sum of forces.
+        // Careful, need to setObjectLocation and *also* update this.location.
+
         if(sumForces.length() > 0) {
             sumForces.normalize();
         }

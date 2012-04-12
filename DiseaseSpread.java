@@ -44,31 +44,6 @@ public class DiseaseSpread extends SimState
         Agent.flockingFactor = flockingFactor;
     }
 
-    /** Stop the simulation when all agents are dead */
-    public boolean allAgentsDead() {
-        Bag bag = environment.getAllObjects();
-        for (int i=0; i < bag.numObjs; i++) {
-            if (bag.objs[i] instanceof Agent) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /** Or when the disease has been eradicated */
-    public boolean allAgentsHealthy() {
-        Bag bag = environment.getAllObjects();
-        for (int i=0; i < bag.numObjs; i++) {
-            if (bag.objs[i] instanceof Agent) {
-                Agent agent = (Agent)bag.objs[i];
-                if (agent.infected) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     /** Returns number of living agents. */
     public int getAgentsAlive()
     {
