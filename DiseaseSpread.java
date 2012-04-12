@@ -120,9 +120,15 @@ public class DiseaseSpread extends SimState
         numAgentsInfected = 0;
         totalEnergy = 0;
         totalEnergyAgents = 0;
+        // Controlling number of initial sick agents.
+        double numInitialSickAgents = disease.percentInitial * defaultNumAgentsInitial;
+
         while(numAgentsAlive < numAgentsInitial) {
             Double2D loc = new Double2D(random.nextDouble() * xMax, random.nextDouble() * yMax);
-            boolean infected = (random.nextDouble() < disease.probInitial);
+            boolean infected = false;
+            if (numAgentsInfected < numInitialSickAgents) {
+              infected = true;
+            }
             Agent agent = new Agent(numAgentsAlive, loc, infected);
             environment.setObjectLocation(agent, loc);
             agent.scheduleItem = schedule.scheduleRepeating(agent); // default interval=1.0
