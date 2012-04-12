@@ -29,6 +29,7 @@ public class Food implements Steppable
     {
         DiseaseSpread sim = (DiseaseSpread)state;
         energy -= energyDrainPerStep;
+        sim.totalEnergy -= energyDrainPerStep;
         if(energy <= 0) {
             sim.environment.remove(this);
             scheduleItem.stop();

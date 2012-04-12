@@ -21,6 +21,12 @@ public class DiseaseSpread extends SimState
     protected FoodMaker foodMaker;
     protected int numAgentsAlive;
     protected int numAgentsInfected;
+    protected double totalEnergy;
+    protected double totalEnergyAgents;
+    // TODO: Currently every time the energy of a food item or agent changes, we
+    // have to remember to update totalEnergy and totalEnergyAgents. Figure out
+    // a way to factor this out so it is in one place, instead of all over the
+    // code.
 
     /**
      * Creates a DiseaseSpread simulation with the given random number seed,
@@ -81,6 +87,24 @@ public class DiseaseSpread extends SimState
         return numAgentsInfected;
     }
 
+    /** Returns total energy (agents + food) in the environment. */
+    public double getTotalEnergy()
+    {
+        return totalEnergy;
+    }
+
+    /** Returns total energy of the agents in the environment. */
+    public double getTotalEnergyAgents()
+    {
+        return totalEnergyAgents;
+    }
+
+    /** Returns total energy of food items in the environment. */
+    public double getTotalEnergyFood()
+    {
+        return totalEnergy - totalEnergyAgents;
+    }
+
     /**
      * Starts the simulation.
      */
@@ -94,6 +118,8 @@ public class DiseaseSpread extends SimState
         // Create and schedule agents.
         numAgentsAlive = 0;
         numAgentsInfected = 0;
+        totalEnergy = 0;
+        totalEnergyAgents = 0;
         while(numAgentsAlive < numAgentsInitial) {
             Double2D loc = new Double2D(random.nextDouble() * xMax, random.nextDouble() * yMax);
             boolean infected = (random.nextDouble() < disease.probInitial);
@@ -101,6 +127,8 @@ public class DiseaseSpread extends SimState
             environment.setObjectLocation(agent, loc);
             agent.scheduleItem = schedule.scheduleRepeating(agent); // default interval=1.0
             numAgentsAlive++;
+            totalEnergy += agent.getEnergy();
+            totalEnergyAgents += agent.getEnergy();
             if(infected) {
                 numAgentsInfected++;
             }

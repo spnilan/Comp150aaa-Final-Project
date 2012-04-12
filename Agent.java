@@ -79,6 +79,8 @@ public class Agent implements Steppable
             drain *= sim.disease.energyDrainMultiplier;
         }
         energy -= drain;
+        sim.totalEnergy -= drain;
+        sim.totalEnergyAgents -= drain;
         if(energy <= 0) {
             sim.environment.remove(this);
             scheduleItem.stop();
@@ -159,6 +161,7 @@ public class Agent implements Steppable
         // Eat the best found item, if any.
         if(bestItem != null) {
             energy += bestItem.energy;
+            sim.totalEnergyAgents += bestItem.energy;
             bestItem.energy = 0;
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().

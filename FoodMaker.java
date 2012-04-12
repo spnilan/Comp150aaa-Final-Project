@@ -27,6 +27,7 @@ public class FoodMaker implements Steppable
             sim.environment.setObjectLocation(item, loc);
             item.scheduleItem = sim.schedule.scheduleRepeating(item, Food.stepInterval);
             addedFood++;
+            sim.totalEnergy += item.energy;
         }
 
         System.out.println("FoodMaker stepped");
