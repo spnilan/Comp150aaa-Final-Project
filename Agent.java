@@ -325,6 +325,8 @@ public class Agent implements Steppable
         this.orientation = new Double2D(sumForces);
 
         sumForces.addIn(this.location);
+        sumForces.x = DiseaseSpread.clamp(sumForces.x, 0, DiseaseSpread.xMax);
+        sumForces.y = DiseaseSpread.clamp(sumForces.y, 0, DiseaseSpread.yMax);
         //System.out.println("current location: " + this.location + " new location: " + sumForces);
         this.location = new Double2D(sumForces);
         sim.environment.setObjectLocation(this, this.location);

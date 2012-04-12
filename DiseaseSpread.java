@@ -196,4 +196,10 @@ public class DiseaseSpread extends SimState
         doLoop(new SimMaker(), args);
         System.exit(0);
     }
+
+    /** Helper: returns value clamped to [min, max] interval. */
+    public static double clamp(double val, double min, double max)
+    {
+        return Math.min(max, Math.max(val, min));
+    }
 }

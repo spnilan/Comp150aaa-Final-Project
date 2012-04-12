@@ -32,7 +32,9 @@ public class FoodMaker implements Steppable
             while(addedFood < spawnCount) {
                 double dx = sim.random.nextGaussian() * clusterVariance,
                        dy = sim.random.nextGaussian() * clusterVariance;
-                Double2D loc = new Double2D(cx + dx, cy + dy);
+                double x = DiseaseSpread.clamp(cx + dx, 0, DiseaseSpread.xMax),
+                       y = DiseaseSpread.clamp(cy + dy, 0, DiseaseSpread.yMax);
+                Double2D loc = new Double2D(x, y);
                 Food item = new Food();
                 sim.environment.setObjectLocation(item, loc);
                 item.scheduleItem = sim.schedule.scheduleRepeating(item, Food.stepInterval);
