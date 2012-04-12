@@ -78,9 +78,10 @@ public class Agent implements Steppable
         if(infected) {
             drain *= sim.disease.energyDrainMultiplier;
         }
+        double actualDrain = Math.min(drain, energy);
         energy -= drain;
-        sim.totalEnergy -= drain;
-        sim.totalEnergyAgents -= drain;
+        sim.totalEnergy -= actualDrain;
+        sim.totalEnergyAgents -= actualDrain;
         if(energy <= 0) {
             sim.environment.remove(this);
             scheduleItem.stop();
