@@ -55,6 +55,18 @@ public class Agent implements Steppable
         return energy > satiatedEnergy;
     }
 
+    /** Returns true if the agent is infected, for display in the GUI console. */
+    public boolean isInfected()
+    {
+        return infected;
+    }
+
+    /** Returns agent's energy, for display in the GUI console. */
+    public double getEnergy()
+    {
+        return energy;
+    }
+
     /** Updates the agent at every step of the simulation. */
     public void step(final SimState state)
     {
