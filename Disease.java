@@ -3,6 +3,10 @@
  */
 class Disease
 {
+    protected static double highTransmission = .9;
+    protected static double lowTransmission = .1;
+    protected static double highDrain = 5;
+    protected static double lowDrain = 1.15;
     protected double probTransmission;
     protected double probRecovery;
     protected double percentInitial;
@@ -27,13 +31,15 @@ class Disease
     {
         // TODO Adjust the parameters to the disease until something interesting happens
         if(name.equals("malaria")) {
-            return new Disease(0.35, 0.03, 0.15, 5, "malaria"); // prevalent and virulent
+            return new Disease(highTransmission, 0.03, 0.15, highDrain, "malaria"); // prevalent and virulent
         } else if(name.equals("cold")) {
-            return new Disease(0.35, 0.03, 0.15, 1.15, "cold"); // prevalent but not virulent
+            return new Disease(highTransmission, 0.03, 0.15, lowDrain, "cold"); // prevalent but not virulent
         } else if(name.equals("avian-flu")) {
-            return new Disease(0.07, 0.03, 0.15, 5, "avian-flu"); // not prevalent but virulent
+            return new Disease(lowTransmission, 0.03, 0.15, highDrain, "avian-flu"); // not prevalent but virulent
+        } else if(name.equals("martian-cold")) {
+	    return new Disease(lowTransmission, 0.03, 0.15, lowDrain, "martian-cold"); //not prevalent nor virulent
         } else if(name.equals("none")) {
-            return new Disease(0.0, 0.0, 0.0, 1.0, "none"); // no disease
+            return new Disease(0, 0.0, 0.0, 0, "none"); // no disease
         } else {
             throw new RuntimeException("Unknown disease '" + name + "'");
         }
