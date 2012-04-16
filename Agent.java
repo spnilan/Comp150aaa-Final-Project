@@ -18,13 +18,17 @@ public class Agent implements Steppable
 
     protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 1.5;
-    protected static double flockingFactor;
+    protected static double flockingFactor = 1.0;
     protected static double flockRepulsionFactor = 0.7;
     protected static final double repulsionFactor = 1.1;
     protected static final double randomnessFactor = 0.2;
     protected static final double orientationFactor = 1.4;
     protected static final double separationDistance = 8;
     protected static final double minDistance = 1;
+
+    protected static final boolean useObservabilityRules = true;
+    protected static final double observability = 0.8;
+    protected static final double symptomTolerance = .3;
 
     // Agent data:
     public int id;
@@ -35,9 +39,14 @@ public class Agent implements Steppable
     
     public Double2D orientation;
 
+    public double symptomVisibility;
+
     // agent behavior
     protected static boolean avoidSick = true;
     protected static boolean avoidEveryone = false;
+
+
+
 
     /** Initializes an agent with the given id and location. */
     public Agent(int id, Double2D location, boolean infected)
@@ -47,7 +56,43 @@ public class Agent implements Steppable
         this.energy = initialEnergy;
         this.infected = infected;
         this.orientation = new Double2D();
+
+	this.symptomVisibility = -1.0;  //Gets reset on first step; apparently I can't make random numbers
+	                                //without access to simstate here.
     }
+
+
+
+
+    //Observability functions.
+    public void setInfectionAppearance(final SimState state)
+    {
+	DiseaseSpread sim = (DiseaseSpread)state;
+
+	double chance;
+	double inf;
+	if (infected) {inf = 1;} else {inf = 0;}
+       
+	chance = sim.random.nextDouble();  //All that passing of SimStates for this random number.  Bleh.
+
+	symptomVisibility = (inf * observability) + (chance * (1 - observability));
+    }
+
+    public boolean looksInfected(Agent guy)
+    {
+	if (useObservabilityRules) {
+	    if (guy.symptomVisibility > symptomTolerance)
+		{return true;}
+	    else
+		{return false;}
+	
+	} else {
+	    return guy.infected;
+	}
+    }
+
+
+
 
     /** Returns true if the agent is satiated (cannot eat right now). */
     public boolean isSatiated()
@@ -71,6 +116,9 @@ public class Agent implements Steppable
     public void step(final SimState state)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
+	
+	if (symptomVisibility < 0) {setInfectionAppearance(state);} /*Initializes symptomVisibility, only
+								      called on first step of simulation. */
 
         // Drain energy and remove agent from environment & schedule if the
         // energy drops to zero.
@@ -82,6 +130,7 @@ public class Agent implements Steppable
         energy -= drain;
         sim.totalEnergy -= actualDrain;
         sim.totalEnergyAgents -= actualDrain;
+
         if(energy <= 0) {
             sim.environment.remove(this);
             scheduleItem.stop();
@@ -185,6 +234,8 @@ public class Agent implements Steppable
                 infected = false;
                 System.out.println("Agent " + id + " recovered");
                 sim.numAgentsInfected--;
+
+		setInfectionAppearance(state);
             }
         } else {
             // Figure out if there is an infected agent nearby.
@@ -201,9 +252,16 @@ public class Agent implements Steppable
                 infected = true;
                 System.out.println("Agent " + id + " got infected");
                 sim.numAgentsInfected++;
+
+		setInfectionAppearance(state);
             }
         }
     }
+
+
+    
+	
+			     
 
     /**
      * Moves in an appropriate direction based on what food items and other
@@ -251,7 +309,7 @@ public class Agent implements Steppable
                     force = direction.normalize().multiply(-1.0 / (d * d));    
                     agentRepulsion.addIn(force);
                 }
-                else if (other.infected && avoidSick) {
+                else if (looksInfected(other) && avoidSick) {
                     force = direction.normalize().multiply(-1.0 / (d * d));
                     agentRepulsion.addIn(force);
                 }
