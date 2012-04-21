@@ -10,9 +10,9 @@ import time
 sim_exe = ["java", "DiseaseSpread"]
 
 
-def extract_time_series(stats, num_trials, num_steps, key):
+def extract_time_series(stats, num_trials, num_samples, key):
     "Helper: extracts a time series from JSON stats."
-    result = np.empty((num_trials, num_steps), dtype=np.int)
+    result = np.empty((num_trials, num_samples), dtype=np.int)
     for trial, stat in enumerate(stats):
         result[trial] = stat[key]
     return result
@@ -25,13 +25,13 @@ def plot_num_agents(stats):
     """
     num_trials = len(stats)
     assert num_trials > 0
-    num_steps = len(stats[0]['numAgentsAlive'])
-    assert num_steps > 0
-    agents_alive = extract_time_series(stats, num_trials, num_steps, 'numAgentsAlive')
-    agents_infected = extract_time_series(stats, num_trials, num_steps, 'numAgentsInfected')
+    num_samples = len(stats[0]['numAgentsAlive'])
+    assert num_samples > 0
+    xs = np.array(stats[0]['step'])
+    agents_alive = extract_time_series(stats, num_trials, num_samples, 'numAgentsAlive')
+    agents_infected = extract_time_series(stats, num_trials, num_samples, 'numAgentsInfected')
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    xs = np.arange(num_steps)
     ax.errorbar(xs, np.mean(agents_alive, axis=0),
                 yerr=np.std(agents_alive, axis=0),
                 color='green', label='alive')
