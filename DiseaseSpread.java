@@ -28,6 +28,9 @@ public class DiseaseSpread extends SimState
     // a way to factor this out so it is in one place, instead of all over the
     // code.
 
+    // Statistics collected and displayed when the simulation ends:
+
+
     /**
      * Creates a DiseaseSpread simulation with the given random number seed,
      * number of agents, disease type, and flocking factor.
@@ -118,6 +121,19 @@ public class DiseaseSpread extends SimState
         // Create and schedule a FoodMaker.
         foodMaker = new FoodMaker();
         schedule.scheduleRepeating(foodMaker); // default interval=1.0
+    }
+    
+    /**
+     * Finishes the simulation and displays accumulated stats.
+     */
+    public void finish()
+    {
+        super.finish();
+
+        System.out.println("==============================================================================");
+        System.out.println("End-of-run statistics:");
+        System.out.println("numAgentsAlive=" + numAgentsAlive);
+        System.out.println("numAgentsInfected=" + numAgentsInfected);
     }
 
     /**
