@@ -27,8 +27,10 @@ public class Agent implements Steppable
     protected static final double minDistance = 1;
 
     protected static final boolean useObservabilityRules = true;
-    protected static final double observability = 0.8;
-    protected static final double symptomTolerance = .3;
+    protected static final double defaultObservability = 0.8;
+    protected static final double defaultSymptomTolerance = 0.3;
+    protected static double observability = defaultObservability; 
+    protected static double symptomTolerance = defaultSymptomTolerance;
 
     // Agent data:
     public int id;

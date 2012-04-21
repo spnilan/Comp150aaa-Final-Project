@@ -1,7 +1,8 @@
-Interesting seeds:
----------------------
-1333929076216 - flock forms, then someone gets infected, then flock disperses
-1333989171647 - 10 agents, good to see eradication of disease, naive clustering
-1334034695569 emergent flocking, pretty cool to watch
-1334035808374 flocking on, avoid sick. groups are chased by sick who infect them all.
-1335019901343 with "-disease none -flocking 0": agents still get stuck when they see no food
+Seed            Parameters                  Remarks
+-------------------------------------------------------------------------------
+1335034076442   -disease cold               Pretty good example of cold being
+                                            maintained after a long period.
+
+1335035230787   -disease malaria            One sick agent infects a large flock
+                                            of healthy agents. Most agents die.
+
