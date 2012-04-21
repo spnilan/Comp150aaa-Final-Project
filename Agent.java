@@ -18,7 +18,7 @@ public class Agent implements Steppable
 
     protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 1.5;
-    protected static double flockingFactor = 1.0;
+    protected static double flockingFactor = 2.5;
     protected static double flockRepulsionFactor = 0.7;
     protected static final double repulsionFactor = 1.1;
     protected static final double randomnessFactor = 0.2;
@@ -27,8 +27,8 @@ public class Agent implements Steppable
     protected static final double minDistance = 1;
 
     protected static final boolean useObservabilityRules = true;
-    protected static final double observability = 0.8;
-    protected static final double symptomTolerance = .3;
+    protected static final double observability = 1;
+    protected static final double symptomTolerance = .2;
 
     // Agent data:
     public int id;
@@ -69,13 +69,21 @@ public class Agent implements Steppable
     {
 	DiseaseSpread sim = (DiseaseSpread)state;
 
-	double chance;
+	double chance = 2;
 	double inf;
-	if (infected) {inf = 1;} else {inf = 0;}
-       
-	chance = sim.random.nextDouble();  //All that passing of SimStates for this random number.  Bleh.
 
-	symptomVisibility = (inf * observability) + (chance * (1 - observability));
+	while ((chance > 1) || (chance < 0)) {
+	    chance = Math.abs (sim.random.nextGaussian() * (1 - observability));
+	};
+
+	//symptomVisibility = (inf * observability) + (chance * (1 - observability));
+
+	if (infected) {
+	    symptomVisibility = (1 - chance);
+	} else {
+	    symptomVisibility = chance;
+	}
+	
     }
 
     public boolean looksInfected(Agent guy)
