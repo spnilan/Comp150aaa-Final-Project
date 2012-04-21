@@ -10,6 +10,8 @@ class AgentPortrayal extends OvalPortrayal2D
     // Portrayal parameters:
     protected static final Color healthyColor = new Color(0, 0, 127);
     protected static final Color sickColor  = new Color(255, 0, 0);
+    protected static final Color falsePositiveColor = new Color(0, 200, 0);
+    protected static final Color falseNegativeColor = new Color(0, 200, 0);
     protected static final Color sensoryRangeColor = new Color(124, 140, 130);
     protected static final Color eatingRangeColor = new Color(150, 255, 0);
     protected static final Color infectionRangeColor = new Color(255, 80, 0);
@@ -49,9 +51,17 @@ class AgentPortrayal extends OvalPortrayal2D
         final int y = (int)info.draw.y;
 
         Color agentColor = healthyColor;
-        if(agent.infected) {
+	boolean symptoms = agent.symptomVisibility > agent.symptomTolerance;
+
+        if(agent.infected && symptoms) {
             agentColor = sickColor;
-        }
+        } else if (!(agent.infected) && symptoms) {
+	    agentColor = falsePositiveColor;
+	} else if (agent.infected && !symptoms) {
+	    agentColor = falseNegativeColor;
+	} else if (!(agent.infected) && !symptoms) {
+	    agentColor = healthyColor;
+	}
         drawCircle(x, y, radius, graphics, agentColor, agent.isSatiated());
     }
 
