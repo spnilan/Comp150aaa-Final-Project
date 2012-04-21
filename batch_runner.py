@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import json
-import matplotlib.myplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
 import tempfile
@@ -32,8 +32,15 @@ def plot_num_agents(stats):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     xs = np.arange(num_steps)
-    ax.errorbar(xs, np.mean(agents_alive), yerr=np.std(agents_alive))
-    ax.errorbar(xs, np.mean(agents_infected), yerr=np.std(agents_infected))
+    ax.errorbar(xs, np.mean(agents_alive, axis=0),
+                yerr=np.std(agents_alive, axis=0),
+                color='green', label='alive')
+    ax.errorbar(xs, np.mean(agents_infected, axis=0),
+                yerr=np.std(agents_infected, axis=0),
+                color='red', label='infected')
+    ax.set_xlabel("simulation step")
+    ax.set_ylabel("number of agents")
+    ax.legend()
     plt.show()
 
 
