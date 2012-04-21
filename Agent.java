@@ -70,22 +70,18 @@ public class Agent implements Steppable
         double inf;
         if (infected) {inf = 1;} else {inf = 0;}
 
+        while ((chance > 1) || (chance < 0)) {
+            chance = Math.abs (sim.random.nextGaussian() * (1 - observability));
+        };
 
-	double chance = 2;
-	double inf;
+        //symptomVisibility = (inf * observability) + (chance * (1 - observability));
 
-	while ((chance > 1) || (chance < 0)) {
-	    chance = Math.abs (sim.random.nextGaussian() * (1 - observability));
-	};
+        if (infected) {
+            symptomVisibility = (1 - chance);
+        } else {
+            symptomVisibility = chance;
+        }
 
-	//symptomVisibility = (inf * observability) + (chance * (1 - observability));
-
-	if (infected) {
-	    symptomVisibility = (1 - chance);
-	} else {
-	    symptomVisibility = chance;
-	}
-	
 
     }
 
