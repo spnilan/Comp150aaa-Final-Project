@@ -66,13 +66,7 @@ public class Agent implements Steppable
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
-        double chance;
-        double inf;
-        if (infected) {inf = 1;} else {inf = 0;}
-
-
 	double chance = 2;
-	double inf;
 
 	while ((chance > 1) || (chance < 0)) {
 	    chance = Math.abs (sim.random.nextGaussian() * (1 - observability));
