@@ -4,6 +4,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -18,7 +19,7 @@ def extract_time_series(stats, num_trials, num_samples, key):
     return result
 
 
-def plot_num_agents(stats):
+def plot_num_agents(stats, title, fig_path):
     """
     Plots number of total agents and number of sick agents, min, max, mean,
     and std. stats is a list of JSON stats from the simulation.
@@ -38,10 +39,12 @@ def plot_num_agents(stats):
     ax.errorbar(xs, np.mean(agents_infected, axis=0),
                 yerr=np.std(agents_infected, axis=0),
                 color='red', label='infected')
+    ax.set_ylim(-5, 25)
+    ax.set_title(title)
     ax.set_xlabel("simulation step")
     ax.set_ylabel("number of agents")
     ax.legend()
-    plt.show()
+    plt.savefig(fig_path)
 
 
 def batch_run(num_trials, sim_args):
@@ -84,26 +87,25 @@ def batch_run(num_trials, sim_args):
         assert data
         stats.append(data)
         print "  -> extracted stats"
-
-    # Show aggregate stats:
-    assert len(stats) == num_trials
-    plot_num_agents(stats)
+    
+    total_time = time.time() - total_time
+    print
     print "run_times: min=%f max=%f mean=%f std=%f" % (
         np.min(run_times), np.max(run_times),
         np.mean(run_times), np.std(run_times))
-
-    total_time = time.time() - total_time
     print
     print "-> %d trials finished in %f seconds" % (num_trials, total_time)
+    return stats
 
 
 if __name__ == "__main__":
     # Batch-run parameters:
     num_trials = None
     sim_args = None
+    title = None
+    fig_path = None
 
     # Parse command-line parameters:
-    import sys
     pos = 1
     while pos < len(sys.argv):
         if sys.argv[pos] == '--num':
@@ -112,6 +114,12 @@ if __name__ == "__main__":
         elif sys.argv[pos] == '--sim-args':
             sim_args = sys.argv[pos + 1].split()
             pos += 2
+        elif sys.argv[pos] == '--title':
+            title = sys.argv[pos + 1]
+            pos += 2
+        elif sys.argv[pos] == '--fig':
+            fig_path = sys.argv[pos + 1]
+            pos += 2
         else:
             print >>sys.stderr, "Bad argument '%s'." % sys.argv[pos]
             pos += 1
@@ -119,7 +127,14 @@ if __name__ == "__main__":
         raise Exception("--num required")
     if sim_args is None:
         raise Exception("--sim-args required")
+    if title is None:
+        raise Exception("--title required")
+    if fig_path is None:
+        raise Exception("--fig required")
 
     # Run it!
-    batch_run(num_trials, sim_args)
+    stats = batch_run(num_trials, sim_args)
 
+    # Show aggregate stats:
+    assert len(stats) == num_trials
+    plot_num_agents(stats, title, fig_path)
