@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import json
+import matplotlib.myplot as plt
 import numpy as np
 import subprocess
 import tempfile
@@ -8,14 +10,40 @@ import time
 sim_exe = ["java", "DiseaseSpread"]
 
 
+def extract_time_series(stats, num_trials, num_steps, key):
+    "Helper: extracts a time series from JSON stats."
+    result = np.empty((num_trials, num_steps), dtype=np.int)
+    for trial, stat in enumerate(stats):
+        result[trial] = stat[key]
+    return result
+
+
+def plot_num_agents(stats):
+    """
+    Plots number of total agents and number of sick agents, min, max, mean,
+    and std. stats is a list of JSON stats from the simulation.
+    """
+    num_trials = len(stats)
+    assert num_trials > 0
+    num_steps = len(stats[0]['numAgentsAlive'])
+    assert num_steps > 0
+    agents_alive = extract_time_series(stats, num_trials, num_steps, 'numAgentsAlive')
+    agents_infected = extract_time_series(stats, num_trials, num_steps, 'numAgentsInfected')
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    xs = np.arange(num_steps)
+    ax.errorbar(xs, np.mean(agents_alive), yerr=np.std(agents_alive))
+    ax.errorbar(xs, np.mean(agents_infected), yerr=np.std(agents_infected))
+    plt.show()
+
+
 def batch_run(num_trials, sim_args):
     """
     Runs the simulation num_trials times, with the given sim_args. Saves logs
     and reports aggregate statistics.
     """
     # Stats extracted from each run:
-    nums_agents_alive = []
-    nums_agents_infected = []
+    stats = []
     run_times = []
     total_time = time.time()
 
@@ -38,34 +66,21 @@ def batch_run(num_trials, sim_args):
         # Collect stats from log. Format:
         # ==============================================================================
         # End-of-run statistics:
-        # numAgentsAlive=15
-        # numAgentsInfected=0
+        # <json data>
         # Quit
         log.seek(0)
         for line in log:
             if line.startswith('======='):
                 break
         log.next()
-        l = log.next().split('=')
-        assert l[0] == 'numAgentsAlive'
-        nums_agents_alive.append(int(l[1]))
-        l = log.next().split('=')
-        assert l[0] == 'numAgentsInfected'
-        nums_agents_infected.append(int(l[1]))
+        data = json.loads(log.next())
+        assert data
+        stats.append(data)
         print "  -> extracted stats"
 
     # Show aggregate stats:
-    assert len(nums_agents_alive) == num_trials
-    assert len(nums_agents_infected) == num_trials
-    assert len(run_times) == num_trials
-    print
-    print "Aggregate stats:"
-    print "nums_agents_alive: min=%d max=%d mean=%f std=%f" % (
-        np.min(nums_agents_alive), np.max(nums_agents_alive),
-        np.mean(nums_agents_alive), np.std(nums_agents_alive))
-    print "nums_agents_infected: min=%d max=%d mean=%f std=%f" % (
-        np.min(nums_agents_infected), np.max(nums_agents_infected),
-        np.mean(nums_agents_infected), np.std(nums_agents_infected))
+    assert len(stats) == num_trials
+    plot_num_agents(stats)
     print "run_times: min=%f max=%f mean=%f std=%f" % (
         np.min(run_times), np.max(run_times),
         np.mean(run_times), np.std(run_times))

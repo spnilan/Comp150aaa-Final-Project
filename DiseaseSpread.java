@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+import java.util.ArrayList;
 import sim.field.continuous.*;
 import sim.engine.*;
 import sim.util.*;
@@ -29,7 +31,15 @@ public class DiseaseSpread extends SimState
     // code.
 
     // Statistics collected and displayed when the simulation ends:
-
+    class Stats {
+        ArrayList<Integer> numAgentsAlive;
+        ArrayList<Integer> numAgentsInfected;
+        Stats() {
+            numAgentsAlive = new ArrayList<Integer>();
+            numAgentsInfected = new ArrayList<Integer>();
+        }
+    };
+    Stats stats = new Stats();
 
     /**
      * Creates a DiseaseSpread simulation with the given random number seed,
@@ -125,8 +135,16 @@ public class DiseaseSpread extends SimState
         // Create and schedule a FoodMaker.
         foodMaker = new FoodMaker();
         schedule.scheduleRepeating(foodMaker); // default interval=1.0
+
+        // Create ans schedule an agent that updates the stats.
+        schedule.scheduleRepeating(new Steppable() {
+            public void step(final SimState state) {
+                stats.numAgentsAlive.add(getAgentsAlive());
+                stats.numAgentsInfected.add(getAgentsInfected());
+            }
+        });
     }
-    
+
     /**
      * Finishes the simulation and displays accumulated stats.
      */
@@ -136,8 +154,8 @@ public class DiseaseSpread extends SimState
 
         System.out.println("==============================================================================");
         System.out.println("End-of-run statistics:");
-        System.out.println("numAgentsAlive=" + numAgentsAlive);
-        System.out.println("numAgentsInfected=" + numAgentsInfected);
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(stats));
     }
 
     /**
