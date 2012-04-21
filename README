@@ -11,3 +11,16 @@ setenv instead of export).
 
 JFreeChart comes with a gnujaxp.jar, which is some old XML thingy which breaks
 java preferences... Don't put it in your classpath.
+
+
+# JMF installation
+For cshell:
+
+setenv JMFHOME $MASON_PROJ_LOC/JMF-2.1.1e
+setenv LD_LIBRARY_PATH $JMFHOME/lib:${LD_LIBRARY_PATH}
+setenv CLASSPATH $JMFHOME/lib/jmf.jar:$JMFHOME/lib/sound.jar:${CLASSPATH}
+
+
+# Gson library for batch stats
+export CLASSPATH=$CLASSPATH:$MASON_PROJ_LOC/gson-2.1.jar
+

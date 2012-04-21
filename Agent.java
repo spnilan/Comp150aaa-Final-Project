@@ -17,8 +17,8 @@ public class Agent implements Steppable
     protected static final double eatingRange = 1;
 
     protected static final double foodFactor = 1.0;
-    protected static final double defaultFlockingFactor = 1.5;
-    protected static double flockingFactor = 2.5;
+    protected static final double defaultFlockingFactor = 2.5;
+    protected static double flockingFactor = defaultFlockingFactor;
     protected static double flockRepulsionFactor = 0.7;
     protected static final double repulsionFactor = 1.1;
     protected static final double randomnessFactor = 0.2;
@@ -27,8 +27,11 @@ public class Agent implements Steppable
     protected static final double minDistance = 1;
 
     protected static final boolean useObservabilityRules = true;
-    protected static final double observability = 1;
-    protected static final double symptomTolerance = .2;
+    protected static final double defaultObservability = 0.8;
+    protected static final double defaultSymptomTolerance = 0.3;
+    protected static double observability = defaultObservability; 
+    protected static double symptomTolerance = defaultSymptomTolerance;
+
 
     // Agent data:
     public int id;
@@ -41,12 +44,6 @@ public class Agent implements Steppable
 
     public double symptomVisibility;
 
-    // agent behavior
-    protected static boolean avoidSick = true;
-    protected static boolean avoidEveryone = false;
-
-
-
 
     /** Initializes an agent with the given id and location. */
     public Agent(int id, Double2D location, boolean infected)
@@ -57,8 +54,8 @@ public class Agent implements Steppable
         this.infected = infected;
         this.orientation = new Double2D();
 
-	this.symptomVisibility = -1.0;  //Gets reset on first step; apparently I can't make random numbers
-	                                //without access to simstate here.
+        this.symptomVisibility = -1.0;  //Gets reset on first step; apparently I can't make random numbers
+                                        //without access to simstate here.
     }
 
 
@@ -67,7 +64,12 @@ public class Agent implements Steppable
     //Observability functions.
     public void setInfectionAppearance(final SimState state)
     {
-	DiseaseSpread sim = (DiseaseSpread)state;
+        DiseaseSpread sim = (DiseaseSpread)state;
+
+        double chance;
+        double inf;
+        if (infected) {inf = 1;} else {inf = 0;}
+
 
 	double chance = 2;
 	double inf;
@@ -84,19 +86,20 @@ public class Agent implements Steppable
 	    symptomVisibility = chance;
 	}
 	
+
     }
 
     public boolean looksInfected(Agent guy)
     {
-	if (useObservabilityRules) {
-	    if (guy.symptomVisibility > symptomTolerance)
-		{return true;}
-	    else
-		{return false;}
-	
-	} else {
-	    return guy.infected;
-	}
+        if (useObservabilityRules) {
+            if (guy.symptomVisibility > symptomTolerance)
+            {return true;}
+            else
+            {return false;}
+
+        } else {
+            return guy.infected;
+        }
     }
 
 
@@ -124,9 +127,9 @@ public class Agent implements Steppable
     public void step(final SimState state)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
-	
-	if (symptomVisibility < 0) {setInfectionAppearance(state);} /*Initializes symptomVisibility, only
-								      called on first step of simulation. */
+
+        if (symptomVisibility < 0) {setInfectionAppearance(state);} /*Initializes symptomVisibility, only
+                                                                      called on first step of simulation. */
 
         // Drain energy and remove agent from environment & schedule if the
         // energy drops to zero.
@@ -171,18 +174,18 @@ public class Agent implements Steppable
                 nearbyAgents.add((Agent)neighbors.objs[i]);
             }
         }
-       
+
         /* 
-        System.out.println("Agent " + id + " sees " + nearbyFood.size() + " food");
-        String s = new String("Agent " + id + " sees ");
-        if (nearbyAgents.size() == 0) {
-            s += "no agents";
-        }
-        for (Agent other : nearbyAgents) {
-            s += " " + other.id + ",";
-        }
-        System.out.println(s); 
-        */
+           System.out.println("Agent " + id + " sees " + nearbyFood.size() + " food");
+           String s = new String("Agent " + id + " sees ");
+           if (nearbyAgents.size() == 0) {
+           s += "no agents";
+           }
+           for (Agent other : nearbyAgents) {
+           s += " " + other.id + ",";
+           }
+           System.out.println(s); 
+           */
 
         // Take appropriate actions. These are factored out into different
         // functions for readability.
@@ -243,7 +246,7 @@ public class Agent implements Steppable
                 System.out.println("Agent " + id + " recovered");
                 sim.numAgentsInfected--;
 
-		setInfectionAppearance(state);
+                setInfectionAppearance(state);
             }
         } else {
             // Figure out if there is an infected agent nearby.
@@ -261,7 +264,7 @@ public class Agent implements Steppable
                 System.out.println("Agent " + id + " got infected");
                 sim.numAgentsInfected++;
 
-		setInfectionAppearance(state);
+                setInfectionAppearance(state);
             }
         }
     }
@@ -313,11 +316,7 @@ public class Agent implements Steppable
 
             direction = other.location.subtract(this.location);
             if (direction.length() > 0) {
-                if (avoidEveryone) {
-                    force = direction.normalize().multiply(-1.0 / (d * d));    
-                    agentRepulsion.addIn(force);
-                }
-                else if (looksInfected(other) && avoidSick) {
+                if (looksInfected(other)) {
                     force = direction.normalize().multiply(-1.0 / (d * d));
                     agentRepulsion.addIn(force);
                 }

@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+import java.util.ArrayList;
 import sim.field.continuous.*;
 import sim.engine.*;
 import sim.util.*;
@@ -29,22 +31,34 @@ public class DiseaseSpread extends SimState
     // code.
 
     // Statistics collected and displayed when the simulation ends:
-
+    class Stats {
+        ArrayList<Integer> numAgentsAlive;
+        ArrayList<Integer> numAgentsInfected;
+        Stats() {
+            numAgentsAlive = new ArrayList<Integer>();
+            numAgentsInfected = new ArrayList<Integer>();
+        }
+    };
+    Stats stats = new Stats();
 
     /**
      * Creates a DiseaseSpread simulation with the given random number seed,
      * number of agents, disease type, and flocking factor.
      */
     public DiseaseSpread(long seed, int numAgentsInitial, Disease disease,
-                         double flockingFactor)
+                         double flockingFactor, double observability, double symptomTolerance)
     {
         super(seed);
         System.out.println("DiseaseSpread: seed=" + seed + " numAgentsInitial=" +
                            numAgentsInitial + " disease=" + disease.name +
-                           " flockingFactor=" + flockingFactor);
+                           " flockingFactor=" + flockingFactor +
+                           " observability=" + observability + 
+                           " symptomTolerance=" + symptomTolerance);
         this.numAgentsInitial = numAgentsInitial;
         this.disease = disease;
         Agent.flockingFactor = flockingFactor;
+        Agent.observability = observability;
+        Agent.symptomTolerance = symptomTolerance;
     }
 
     /** Returns number of living agents. */
@@ -121,8 +135,16 @@ public class DiseaseSpread extends SimState
         // Create and schedule a FoodMaker.
         foodMaker = new FoodMaker();
         schedule.scheduleRepeating(foodMaker); // default interval=1.0
+
+        // Create ans schedule an agent that updates the stats.
+        schedule.scheduleRepeating(new Steppable() {
+            public void step(final SimState state) {
+                stats.numAgentsAlive.add(getAgentsAlive());
+                stats.numAgentsInfected.add(getAgentsInfected());
+            }
+        });
     }
-    
+
     /**
      * Finishes the simulation and displays accumulated stats.
      */
@@ -132,8 +154,8 @@ public class DiseaseSpread extends SimState
 
         System.out.println("==============================================================================");
         System.out.println("End-of-run statistics:");
-        System.out.println("numAgentsAlive=" + numAgentsAlive);
-        System.out.println("numAgentsInfected=" + numAgentsInfected);
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(stats));
     }
 
     /**
@@ -150,6 +172,25 @@ public class DiseaseSpread extends SimState
         return null;
     }
 
+    static boolean hasArgument(String key, String[] args) {
+        for (String arg : args) {
+            if (arg.equalsIgnoreCase(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static void displayHelp() {
+
+        System.out.println("-disease {none, malaria, avian-flu, cold, martian-cold}");
+        System.out.println("-num X                  X number of agents at beginning");
+        System.out.println("-flocking X             X is a real number");
+        System.out.println("-observability X        X is a double from 0 to 1");
+        System.out.println("-symptom-tolerance X    X is a double from 0 to 1"); 
+
+    }
+
     /** Handles our custom command-line parameters. */
     protected static class SimMaker implements MakesSimState
     {
@@ -162,6 +203,24 @@ public class DiseaseSpread extends SimState
             int numAgentsInitial = DiseaseSpread.defaultNumAgentsInitial;
             Disease disease = DiseaseSpread.defaultDisease;
             double flockingFactor = Agent.defaultFlockingFactor;
+            double symptomTolerance = Agent.defaultSymptomTolerance;
+            double observability = Agent.defaultObservability;
+
+            boolean help = hasArgument("-help", args);
+            if (help) {
+                displayHelp();
+                System.exit(0);
+            }
+
+            String sof = argumentForKey("-observability", args);
+            if (sof != null) {
+                observability = Double.parseDouble(sof);
+            }
+
+            String sst = argumentForKey("-symptom-tolerance", args);
+            if (sst != null) {
+                symptomTolerance = Double.parseDouble(sst);
+            }
 
             String sna = argumentForKey("-num", args);
             if(sna != null) {
@@ -178,7 +237,8 @@ public class DiseaseSpread extends SimState
                 flockingFactor = Double.parseDouble(sff);
             }
 
-            return new DiseaseSpread(seed, numAgentsInitial, disease, flockingFactor);
+            return new DiseaseSpread(seed, numAgentsInitial, disease, flockingFactor, 
+                                     observability, symptomTolerance);
         }
 
         public Class simulationClass()
