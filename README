@@ -21,3 +21,6 @@ setenv LD_LIBRARY_PATH $JMFHOME/lib:${LD_LIBRARY_PATH}
 setenv CLASSPATH $JMFHOME/lib/jmf.jar:$JMFHOME/lib/sound.jar:${CLASSPATH}
 
 
+# Gson library for batch stats
+export CLASSPATH=$CLASSPATH:$MASON_PROJ_LOC/gson-2.1.jar
+
