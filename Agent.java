@@ -32,6 +32,7 @@ public class Agent implements Steppable
     protected static double observability = defaultObservability; 
     protected static double symptomTolerance = defaultSymptomTolerance;
 
+
     // Agent data:
     public int id;
     public Double2D location;
@@ -69,9 +70,19 @@ public class Agent implements Steppable
         double inf;
         if (infected) {inf = 1;} else {inf = 0;}
 
-        chance = sim.random.nextDouble();  //All that passing of SimStates for this random number.  Bleh.
+        while ((chance > 1) || (chance < 0)) {
+            chance = Math.abs (sim.random.nextGaussian() * (1 - observability));
+        };
 
-        symptomVisibility = (inf * observability) + (chance * (1 - observability));
+        //symptomVisibility = (inf * observability) + (chance * (1 - observability));
+
+        if (infected) {
+            symptomVisibility = (1 - chance);
+        } else {
+            symptomVisibility = chance;
+        }
+
+
     }
 
     public boolean looksInfected(Agent guy)
