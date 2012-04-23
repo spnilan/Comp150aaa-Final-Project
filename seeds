@@ -17,4 +17,9 @@ Seed            Parameters                  Remarks
                                             agents die, healthy agents form
                                             flock after.
 
+1335197972531   -flocking 0 -disease cold   Disease dies quickly. Also shows
+                                            how even in no flocking, we 
+                                            sometimes have the appearance of
+                                            flocking.
 
+  
