@@ -32,9 +32,12 @@ public class DiseaseSpread extends SimState
 
     // Statistics collected and displayed when the simulation ends:
     class Stats {
+        static final int stepSize = 10;
+        ArrayList<Integer> step;
         ArrayList<Integer> numAgentsAlive;
         ArrayList<Integer> numAgentsInfected;
         Stats() {
+            step = new ArrayList<Integer>();
             numAgentsAlive = new ArrayList<Integer>();
             numAgentsInfected = new ArrayList<Integer>();
         }
@@ -137,12 +140,13 @@ public class DiseaseSpread extends SimState
         schedule.scheduleRepeating(foodMaker); // default interval=1.0
 
         // Create ans schedule an agent that updates the stats.
-        schedule.scheduleRepeating(new Steppable() {
+        schedule.scheduleRepeating(schedule.EPOCH, new Steppable() {
             public void step(final SimState state) {
+                stats.step.add((int)state.schedule.getSteps());
                 stats.numAgentsAlive.add(getAgentsAlive());
                 stats.numAgentsInfected.add(getAgentsInfected());
             }
-        });
+        }, Stats.stepSize);
     }
 
     /**

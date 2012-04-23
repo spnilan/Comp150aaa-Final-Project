@@ -66,6 +66,7 @@ public class Agent implements Steppable
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
+
 	double chance = 2;
 
 	while ((chance > 1) || (chance < 0)) {

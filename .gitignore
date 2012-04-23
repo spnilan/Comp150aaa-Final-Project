@@ -5,3 +5,4 @@ world.jar
 simworldfiles/
 simworldfiles/*
 batch-*/
+*.pyc
