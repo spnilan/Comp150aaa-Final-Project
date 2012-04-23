@@ -20,3 +20,11 @@ Seed            Parameters                  Remarks
                 -symptom-tolerance 0.2      and food cluster because he
                 -observability 0.2          perceives agent as infected.
                 -num 8                      Upper right corner. 
+
+1335199536096   -disease avian-flu          Most agents die. Around step 400
+                                            the remaining flock is broken up
+                                            by agents perceived to be
+                                            infected.
+                                            
+1335200078433   -disease none               Nice flocking simulation.
+                -observability 1.0
