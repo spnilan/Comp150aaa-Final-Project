@@ -26,3 +26,5 @@ Seed            Parameters                  Remarks
                                             by agents perceived to be
                                             infected.
                                             
+1335200078433   -disease none               Nice flocking simulation.
+                -observability 1.0
