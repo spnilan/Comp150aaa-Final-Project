@@ -1,11 +1,22 @@
 Seed            Parameters                  Remarks
 -------------------------------------------------------------------------------
-1335034076442   -disease cold               Pretty good example of cold being
-                                            maintained after a long period.
 
-1335035230787   -disease malaria            One sick agent infects a large flock
-                                            of healthy agents. Most agents die.
+1335197270906   -disease malaria            Sick agents die immediately before
+                                            infecting any other agents.
 
-1335035836958   -disease avian-flu          15 agents survive. Also good example
-                                            of flock splitting in two at around
-                                            step 150.
+1335197435816   -disease malaria            Good showcase of malaria. Many
+                                            agents die, healthy agents form
+                                            flock after.
+
+1335197972531   -flocking 0 -disease cold   Disease dies quickly. Also shows
+                                            how even in no flocking, we 
+                                            sometimes have the appearance of
+                                            flocking.
+
+1335198299248   -disease cold               Cold lasts forever.
+
+
+1335198705401   -disease malaria            Shows agent avoiding healthy agent
+                -symptom-tolerance 0.2      and food cluster because he
+                -observability 0.2          perceives agent as infected.
+                -num 8                      Upper right corner. 
