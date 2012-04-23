@@ -9,3 +9,12 @@ Seed            Parameters                  Remarks
 1335035836958   -disease avian-flu          15 agents survive. Also good example
                                             of flock splitting in two at around
                                             step 150.
+
+1335197270906   -disease malaria            Sick agents die immediately before
+                                            infecting any other agents.
+
+1335197435816   -disease malaria            Good showcase of malaria. Many
+                                            agents die, healthy agents form
+                                            flock after.
+
+
