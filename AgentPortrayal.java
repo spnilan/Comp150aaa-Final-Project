@@ -42,6 +42,18 @@ class AgentPortrayal extends OvalPortrayal2D
         }
     }
 
+    public void drawAsterisk(final int x, final int y, int radius,
+                             Graphics2D graphics, Color color) 
+    {
+        final int topX = x - (radius * 2);
+        final int topY = y - (radius * 2);
+        final int width = radius;
+        final int height = radius;
+
+        graphics.setPaint(color);
+        graphics.fillOval(topX, topY, width, height);
+    }
+
     public void drawAgent(Agent agent, Graphics2D graphics, DrawInfo2D info)
     {
         final int radius = (int)(info.draw.width / 2.0);
@@ -53,6 +65,10 @@ class AgentPortrayal extends OvalPortrayal2D
             agentColor = sickColor;
         }
         drawCircle(x, y, radius, graphics, agentColor, agent.isSatiated());
+        boolean symptoms = agent.symptomVisibility > agent.symptomTolerance;
+        if (symptoms) {
+            drawAsterisk(x, y, radius, graphics, agentColor);
+        }
     }
 
     public void drawSensoryRange(Graphics2D graphics, DrawInfo2D info)
