@@ -16,4 +16,7 @@ Seed            Parameters                  Remarks
 1335198299248   -disease cold               Cold lasts forever.
 
 
-  
+1335198705401   -disease malaria            Shows agent avoiding healthy agent
+                -symptom-tolerance 0.2      and food cluster because he
+                -observability 0.2          perceives agent as infected.
+                -num 8                      Upper right corner. 
