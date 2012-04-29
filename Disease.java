@@ -37,7 +37,7 @@ class Disease
         } else if(name.equals("avian-flu")) {
             return new Disease(lowTransmission, 0.03, 0.15, highDrain, "avian-flu"); // not prevalent but virulent
         } else if(name.equals("martian-cold")) {
-	    return new Disease(lowTransmission, 0.03, 0.15, lowDrain, "martian-cold"); //not prevalent nor virulent
+            return new Disease(lowTransmission, 0.03, 0.15, lowDrain, "martian-cold"); //not prevalent nor virulent
         } else if(name.equals("none")) {
             return new Disease(0, 0.0, 0.0, 0, "none"); // no disease
         } else {
