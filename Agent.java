@@ -83,16 +83,6 @@ public class Agent implements Steppable
         this.lastForces = new ArrayList<Force>();
     }
 
-    //Called by another agent when it eats food within sharing range; should add energy
-    //according to however we want food sharing to work.
-    public void receiveEnergy() {
-        this.energy = this.energy + 200;
-    }
-
-    //Called whenever the agent eats a food.
-    private void transmitEnergy(int recipients) {
-        this.energy = this.energy - (10 * recipients);
-    }
 
     /** Returns random symptom visibility for the given infected state. */
     public static double calcSymptomVisibility(final DiseaseSpread sim, boolean infected)
@@ -156,18 +146,6 @@ public class Agent implements Steppable
                 nearbyAgents.add((Agent)neighbors.objs[i]);
             }
         }
-
-        /* 
-           System.out.println("Agent " + id + " sees " + nearbyFood.size() + " food");
-           String s = new String("Agent " + id + " sees ");
-           if (nearbyAgents.size() == 0) {
-           s += "no agents";
-           }
-           for (Agent other : nearbyAgents) {
-           s += " " + other.id + ",";
-           }
-           System.out.println(s); 
-           */
 
         // Drain energy and remove agent from environment & schedule if the
         // energy drops to zero.
@@ -233,21 +211,27 @@ public class Agent implements Steppable
 
         // Eat the best found item, if any.
         if(bestItem != null) {
-            energy += bestItem.energy;
+            ArrayList<Agent> sharingAgents = new ArrayList<Agent>();
+
+            for (Agent guy: nearbyAgents) {
+                if (guy.location.distance(this.location) < sharingRange) {
+                    sharingAgents.add(guy);
+                }
+            }
+            if (sharingAgents.size() > 0) {
+                energy += bestItem.energy / 2;
+                for (Agent other : sharingAgents) {
+                    other.energy += bestItem.energy / (2 * sharingAgents.size());
+                }
+            } else {
+                energy += bestItem.energy;
+            }
+
             sim.totalEnergyAgents += bestItem.energy;
             bestItem.energy = 0;
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
             System.out.println("Agent " + id + " ate");
-
-            int recipients = 0;
-            for (Agent guy: nearbyAgents) {
-                if (guy.location.distance(this.location) < sharingRange) {
-                    guy.receiveEnergy();
-                    recipients++;
-                }
-            }
-            this.transmitEnergy(recipients);
         }
     }
 
