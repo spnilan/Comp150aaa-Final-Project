@@ -22,6 +22,7 @@ public class Agent implements Steppable
     protected static final double flockingBenefitRange = 10;
     protected static final int flockingMinOthers = 4;
     protected static final double flockingDrainMultiplier = 0.5;
+    protected static final double sharingRange = 10;
 
     // Flocking parameters:
     protected double cohesionFactor = 1.0;
@@ -35,7 +36,7 @@ public class Agent implements Steppable
     // XXX obsolete:
     protected static final double defaultFlockingFactor = 2.5;
     protected static double flockingFactor = defaultFlockingFactor;
-    protected static double flockRepulsionFactor = 0.7;
+    protected static double flockRepulsionFactor = 1.0;
     protected static final double repulsionFactor = 1.1;
     protected static final double orientationFactor = 1.4;
     protected static final double separationDistance = 8;
@@ -83,6 +84,17 @@ public class Agent implements Steppable
         this.lastForces = new ArrayList<Force>();
     }
 
+    //Called by another agent when it eats food within sharing range; should add energy
+    //according to however we want food sharing to work.
+    public void receiveEnergy() {
+        this.energy = this.energy + 200;
+    }
+
+    //Called whenever the agent eats a food.
+    private void transmitEnergy(int recipients) {
+        this.energy = this.energy - (10 * recipients);
+    }
+
     /** Returns random symptom visibility for the given infected state. */
     public static double calcSymptomVisibility(final DiseaseSpread sim, boolean infected)
     {
@@ -97,7 +109,7 @@ public class Agent implements Steppable
         return symptomVisibility;
     }
 
-    /** Returns true if another agent look infected from this agent's perspective. */
+    /** Returns true if another agent looks infected from this agent's perspective. */
     public boolean looksInfected(Agent guy)
     {
         if (useObservabilityRules) {
@@ -190,7 +202,7 @@ public class Agent implements Steppable
 
         // Take appropriate actions. These are factored out into different
         // functions for readability.
-        stepEat(state, nearbyFood);
+        stepEat(state, nearbyFood, nearbyAgents);
         stepUpdateInfected(state, nearbyAgents);
         stepMove(state, nearbyFood, nearbyAgents);
     }
@@ -199,7 +211,7 @@ public class Agent implements Steppable
      * Go through the list of nearby food and eat the best item we can find.
      * The eaten food item gets removed from the environment and the schedule.
      */
-    private void stepEat(final SimState state, ArrayList<Food> nearbyFood)
+    private void stepEat(final SimState state, ArrayList<Food> nearbyFood, ArrayList<Agent> nearbyAgents)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
@@ -228,6 +240,15 @@ public class Agent implements Steppable
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
             System.out.println("Agent " + id + " ate");
+
+            int recipients = 0;
+            for (Agent guy: nearbyAgents) {
+                if (guy.location.distance(this.location) < sharingRange) {
+                    guy.receiveEnergy();
+                    recipients++;
+                }
+            }
+            this.transmitEnergy(recipients);
         }
     }
 
