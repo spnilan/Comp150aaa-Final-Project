@@ -6,4 +6,7 @@ simworldfiles/
 simworldfiles/*
 batch-*/
 *.pyc
-plots/fig-*.png
+plots/figs
+plots/conservation
+plots/videos
+
