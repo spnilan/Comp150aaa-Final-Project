@@ -116,7 +116,7 @@ public class DiseaseSpread extends SimState
         totalEnergy = 0;
         totalEnergyAgents = 0;
         // Controlling number of initial sick agents.
-        double numInitialSickAgents = disease.percentInitial * defaultNumAgentsInitial;
+        double numInitialSickAgents = disease.percentInitial * numAgentsInitial;
 
         while(numAgentsAlive < numAgentsInitial) {
             // Is the agent infected?
