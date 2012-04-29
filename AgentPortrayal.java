@@ -54,6 +54,20 @@ class AgentPortrayal extends OvalPortrayal2D
         graphics.fillOval(topX, topY, width, height);
     }
 
+    public void drawEnergyBar(int x, int y, int width, double fullness,
+                              Graphics2D graphics, Color color)
+    {
+        final int topX = x - width / 2;
+        final int topY = y - width;
+        final int height = width / 4;
+        if(fullness > 1) {
+            fullness = 1;
+        }
+        graphics.setPaint(color);
+        graphics.drawRect(topX, topY, width, height);
+        graphics.fillRect(topX, topY, (int)(fullness * width), height);
+    }
+
     public void drawAgent(Agent agent, Graphics2D graphics, DrawInfo2D info)
     {
         final int radius = (int)(info.draw.width / 2.0);
@@ -64,11 +78,14 @@ class AgentPortrayal extends OvalPortrayal2D
         if(agent.infected) {
             agentColor = sickColor;
         }
-        drawCircle(x, y, radius, graphics, agentColor, agent.isSatiated());
+        drawCircle(x, y, radius, graphics, agentColor, true);
         boolean symptoms = agent.symptomVisibility > agent.symptomTolerance;
         if (symptoms) {
             drawAsterisk(x, y, radius, graphics, agentColor);
         }
+        drawEnergyBar(x, y, (int)(info.draw.width * 2),
+                      agent.getEnergy() / agent.initialEnergy,
+                      graphics, agentColor);
     }
 
     public void drawSensoryRange(Graphics2D graphics, DrawInfo2D info)
