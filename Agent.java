@@ -466,7 +466,7 @@ public class Agent implements Steppable
         if(l == 0) {
             l = 1;
         }
-        return new Double2D(20 * x / l, 20 * y / l);
+        return new Double2D(1.5 * x / l, 1.5 * y / l);
     }
 
     // Returns "disease avoidance" component of our modified "boids" flocking
