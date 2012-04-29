@@ -32,73 +32,49 @@ public class Agent implements Steppable
     protected static double observability = defaultObservability; 
     protected static double symptomTolerance = defaultSymptomTolerance;
 
-
     // Agent data:
     public int id;
     public Double2D location;
+    public Double2D orientation;
     public double energy;
     public boolean infected;
-    protected Stoppable scheduleItem;
-    
-    public Double2D orientation;
-
     public double symptomVisibility;
-
+    protected Stoppable scheduleItem;
 
     /** Initializes an agent with the given id and location. */
-    public Agent(int id, Double2D location, boolean infected)
+    public Agent(int id, Double2D location, boolean infected, double symptomVisibility)
     {
         this.id = id;
         this.location = location;
         this.energy = initialEnergy;
         this.infected = infected;
         this.orientation = new Double2D();
-
-        this.symptomVisibility = -1.0;  //Gets reset on first step; apparently I can't make random numbers
-                                        //without access to simstate here.
+        this.symptomVisibility = symptomVisibility;
     }
 
-
-
-
-    //Observability functions.
-    public void setInfectionAppearance(final SimState state)
+    /** Returns random symptom visibility for the given infected state. */
+    public static double calcSymptomVisibility(final DiseaseSpread sim, boolean infected)
     {
-        DiseaseSpread sim = (DiseaseSpread)state;
-
-
-	double chance = 2;
-
-	while ((chance > 1) || (chance < 0)) {
-	    chance = Math.abs (sim.random.nextGaussian() * (1 - observability));
-	};
-
-	//symptomVisibility = (inf * observability) + (chance * (1 - observability));
-
-	if (infected) {
-	    symptomVisibility = (1 - chance);
-	} else {
-	    symptomVisibility = chance;
-	}
-	
-
+        double chance = -1;
+        while ((chance > 1) || (chance < 0)) {
+            chance = Math.abs (sim.random.nextGaussian() * (1 - observability));
+        };
+        double symptomVisibility = chance;
+        if(infected) {
+            symptomVisibility = (1 - chance);
+        }
+        return symptomVisibility;
     }
 
+    /** Returns true if another agent look infected from this agent's perspective. */
     public boolean looksInfected(Agent guy)
     {
         if (useObservabilityRules) {
-            if (guy.symptomVisibility > symptomTolerance)
-            {return true;}
-            else
-            {return false;}
-
+            return (guy.symptomVisibility > this.symptomTolerance);
         } else {
             return guy.infected;
         }
     }
-
-
-
 
     /** Returns true if the agent is satiated (cannot eat right now). */
     public boolean isSatiated()
@@ -122,9 +98,6 @@ public class Agent implements Steppable
     public void step(final SimState state)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
-
-        if (symptomVisibility < 0) {setInfectionAppearance(state);} /*Initializes symptomVisibility, only
-                                                                      called on first step of simulation. */
 
         // Drain energy and remove agent from environment & schedule if the
         // energy drops to zero.
@@ -238,10 +211,9 @@ public class Agent implements Steppable
             // Recover with some probability.
             if(sim.random.nextDouble() <= sim.disease.probRecovery) {
                 infected = false;
+                symptomVisibility = calcSymptomVisibility(sim, false);
                 System.out.println("Agent " + id + " recovered");
                 sim.numAgentsInfected--;
-
-                setInfectionAppearance(state);
             }
         } else {
             // Figure out if there is an infected agent nearby.
@@ -256,18 +228,12 @@ public class Agent implements Steppable
             // If there is an infected agent nearby, get infected with some probability.
             if(foundInfected && sim.random.nextDouble() <= sim.disease.probTransmission) {
                 infected = true;
+                symptomVisibility = calcSymptomVisibility(sim, true);
                 System.out.println("Agent " + id + " got infected");
                 sim.numAgentsInfected++;
-
-                setInfectionAppearance(state);
             }
         }
     }
-
-
-    
-	
-			     
 
     /**
      * Moves in an appropriate direction based on what food items and other

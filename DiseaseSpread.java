@@ -119,12 +119,18 @@ public class DiseaseSpread extends SimState
         double numInitialSickAgents = disease.percentInitial * defaultNumAgentsInitial;
 
         while(numAgentsAlive < numAgentsInitial) {
-            Double2D loc = new Double2D(random.nextDouble() * xMax, random.nextDouble() * yMax);
+            // Is the agent infected?
             boolean infected = false;
             if (numAgentsInfected < numInitialSickAgents) {
-              infected = true;
+                infected = true;
             }
-            Agent agent = new Agent(numAgentsAlive, loc, infected);
+            // How infected does the agent *look*?
+            double symptomVisibility = Agent.calcSymptomVisibility(this, infected);
+            System.out.println("creating agent " + numAgentsAlive + " with infected=" +
+                    infected + " and symptomVisibility=" + symptomVisibility);
+            // Create and schedule the agent:
+            Double2D loc = new Double2D(random.nextDouble() * xMax, random.nextDouble() * yMax);
+            Agent agent = new Agent(numAgentsAlive, loc, infected, symptomVisibility);
             environment.setObjectLocation(agent, loc);
             agent.scheduleItem = schedule.scheduleRepeating(agent); // default interval=1.0
             numAgentsAlive++;
