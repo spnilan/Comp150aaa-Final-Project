@@ -118,13 +118,16 @@ class AgentPortrayal extends OvalPortrayal2D
 
     public void drawForces(final Agent agent, Graphics2D graphics, DrawInfo2D info)
     {
-        final double radius = 60;
+        final double radius = 100;
         Double2D sum = new Double2D(0, 0);
+        double maxLength = 1.0;
         for(final Agent.Force f : agent.lastForces) {
-            sum = sum.add(f.force.multiply(f.multiplier));
+            Double2D actualForce = f.force.multiply(f.multiplier);
+            sum = sum.add(actualForce);
+            maxLength = Math.max(maxLength, actualForce.length());
         }
-        double len = sum.length();
-        double resizeFactor = radius / len;
+        maxLength = Math.max(maxLength, sum.length());
+        double resizeFactor = radius / maxLength;
         drawOneForce("sum", sum.multiply(resizeFactor), graphics, info);
         for(final Agent.Force f : agent.lastForces) {
             drawOneForce(f.name, f.force.multiply(f.multiplier * resizeFactor), graphics, info);
@@ -133,10 +136,16 @@ class AgentPortrayal extends OvalPortrayal2D
 
     public void drawOneForce(String name, Double2D force, Graphics2D graphics, DrawInfo2D info)
     {
+        final double minLength = 40;
+        if(force.length() < minLength)
+            return;
+
         graphics.drawLine((int)(info.draw.x),
                           (int)(info.draw.y),
                           (int)(info.draw.x + force.x),
                           (int)(info.draw.y + force.y));
+        // final double textRadius = 150;
+        // force = force.resize(textRadius);
         graphics.drawString(name,
                             (int)(info.draw.x + force.x),
                             (int)(info.draw.y + force.y));
