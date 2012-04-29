@@ -16,10 +16,12 @@ public class Agent implements Steppable
     protected static final double infectionRange = 10;
     protected static final double eatingRange = 1;
 
+    protected static final double sharingRange = 10;
+
     protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 2.5;
     protected static double flockingFactor = defaultFlockingFactor;
-    protected static double flockRepulsionFactor = 0.7;
+    protected static double flockRepulsionFactor = 1.0;
     protected static final double repulsionFactor = 1.1;
     protected static final double randomnessFactor = 0.2;
     protected static final double orientationFactor = 1.4;
@@ -31,6 +33,8 @@ public class Agent implements Steppable
     protected static final double defaultSymptomTolerance = 0.3;
     protected static double observability = defaultObservability; 
     protected static double symptomTolerance = defaultSymptomTolerance;
+
+
 
 
     // Agent data:
@@ -59,6 +63,15 @@ public class Agent implements Steppable
     }
 
 
+    //Called by another agent when it eats food within sharing range; should add energy
+    //according to however we want food sharing to work.
+    public void receiveEnergy() {
+	this.energy = this.energy + 200;
+    }
+    //Called whenever the agent eats a food.
+    private void transmitEnergy(int recipients) {
+	this.energy = this.energy - (10 * recipients);
+    }
 
 
     //Observability functions.
@@ -184,7 +197,7 @@ public class Agent implements Steppable
 
         // Take appropriate actions. These are factored out into different
         // functions for readability.
-        stepEat(state, nearbyFood);
+        stepEat(state, nearbyFood, nearbyAgents);
         stepUpdateInfected(state, nearbyAgents);
         stepMove(state, nearbyFood, nearbyAgents);
     }
@@ -193,7 +206,7 @@ public class Agent implements Steppable
      * Go through the list of nearby food and eat the best item we can find.
      * The eaten food item gets removed from the environment and the schedule.
      */
-    private void stepEat(final SimState state, ArrayList<Food> nearbyFood)
+    private void stepEat(final SimState state, ArrayList<Food> nearbyFood, ArrayList<Agent> nearbyAgents)
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
@@ -222,6 +235,16 @@ public class Agent implements Steppable
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
             System.out.println("Agent " + id + " ate");
+
+	    int recipients = 0;
+	    for (Agent guy: nearbyAgents) {
+		Double2D itemLoc = sim.environment.getObjectLocation(guy);
+		if (itemLoc.distance(this.location) < sharingRange) {
+		    guy.receiveEnergy();
+		    recipients++;
+		}
+	    }
+	    this.transmitEnergy(recipients);
         }
     }
 
