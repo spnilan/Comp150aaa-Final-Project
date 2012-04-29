@@ -11,10 +11,13 @@ public class Agent implements Steppable
     // Agent parameters:
     protected static final double initialEnergy = 1000;
     protected static final double satiatedEnergy = 1200;
-    protected static final double energyDrainPerStep = 10;
+    protected static final double energyDrainPerStep = 30;
     protected static final double sensoryRange = 20;
     protected static final double infectionRange = 10;
     protected static final double eatingRange = 1;
+    protected static final double flockingBenefitRange = 10;
+    protected static final int flockingMinOthers = 4;
+    protected static final double flockingDrainMultiplier = 0.5;
 
     protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 2.5;
@@ -99,28 +102,6 @@ public class Agent implements Steppable
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
-        // Drain energy and remove agent from environment & schedule if the
-        // energy drops to zero.
-        double drain = energyDrainPerStep;
-        if(infected) {
-            drain *= sim.disease.energyDrainMultiplier;
-        }
-        double actualDrain = Math.min(drain, energy);
-        energy -= drain;
-        sim.totalEnergy -= actualDrain;
-        sim.totalEnergyAgents -= actualDrain;
-
-        if(energy <= 0) {
-            sim.environment.remove(this);
-            scheduleItem.stop();
-            System.out.println("Agent " + id + " died");
-            sim.numAgentsAlive--;
-            if(infected) {
-                sim.numAgentsInfected--;
-            }
-            return;
-        }
-
         // Collect nearby items and sort them by type.
         Bag neighbors = sim.environment.getObjectsWithinDistance(location, sensoryRange);
         ArrayList<Agent> nearbyAgents = new ArrayList<Agent>();
@@ -154,6 +135,36 @@ public class Agent implements Steppable
            }
            System.out.println(s); 
            */
+
+        // Drain energy and remove agent from environment & schedule if the
+        // energy drops to zero.
+        double drain = energyDrainPerStep;
+        int withinFlockingRange = 0;
+        for(Agent other : nearbyAgents) {
+            if(other.location.distance(this.location) <= flockingBenefitRange) {
+                withinFlockingRange++;
+            }
+        }
+        if(withinFlockingRange >= flockingMinOthers) {
+            drain *= flockingDrainMultiplier;
+        }
+        if(infected) {
+            drain *= sim.disease.energyDrainMultiplier;
+        }
+        double actualDrain = Math.min(drain, energy);
+        energy -= drain;
+        sim.totalEnergy -= actualDrain;
+        sim.totalEnergyAgents -= actualDrain;
+        if(energy <= 0) {
+            sim.environment.remove(this);
+            scheduleItem.stop();
+            System.out.println("Agent " + id + " died");
+            sim.numAgentsAlive--;
+            if(infected) {
+                sim.numAgentsInfected--;
+            }
+            return;
+        }
 
         // Take appropriate actions. These are factored out into different
         // functions for readability.
