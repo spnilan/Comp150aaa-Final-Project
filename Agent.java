@@ -1,17 +1,21 @@
+import ec.util.*;
 import sim.engine.*;
+import sim.field.continuous.*;
 import sim.util.*;
 import java.util.ArrayList;
 
 /**
  * An agent in the simulation. The agent has a certain amount of energy. The
  * agent can be healthy or infected.
+ *
+ * Uses some flocking code by Sean Luke ('flockers' example in Mason).
  */
 public class Agent implements Steppable
 {
     // Agent parameters:
     protected static final double initialEnergy = 1000;
     protected static final double satiatedEnergy = 1200;
-    protected static final double energyDrainPerStep = 30;
+    protected static final double energyDrainPerStep = 10;
     protected static final double sensoryRange = 20;
     protected static final double infectionRange = 10;
     protected static final double eatingRange = 1;
@@ -19,16 +23,24 @@ public class Agent implements Steppable
     protected static final int flockingMinOthers = 4;
     protected static final double flockingDrainMultiplier = 0.5;
 
+    // Flocking parameters:
+    protected double cohesionFactor = 1.0;
+    protected double avoidanceFactor = 1.0;
+    protected double randomnessFactor = 1.0;
+    protected double consistencyFactor = 1.0;
+    protected double momentumFactor = 1.0;
+
+    // XXX obsolete:
     protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 2.5;
     protected static double flockingFactor = defaultFlockingFactor;
     protected static double flockRepulsionFactor = 0.7;
     protected static final double repulsionFactor = 1.1;
-    protected static final double randomnessFactor = 0.2;
     protected static final double orientationFactor = 1.4;
     protected static final double separationDistance = 8;
     protected static final double minDistance = 1;
 
+    // Observability parameters:
     protected static final boolean useObservabilityRules = true;
     protected static final double defaultObservability = 0.8;
     protected static final double defaultSymptomTolerance = 0.3;
@@ -38,7 +50,7 @@ public class Agent implements Steppable
     // Agent data:
     public int id;
     public Double2D location;
-    public Double2D orientation;
+    public Double2D lastDirection;
     public double energy;
     public boolean infected;
     public double symptomVisibility;
@@ -51,7 +63,7 @@ public class Agent implements Steppable
         this.location = location;
         this.energy = initialEnergy;
         this.infected = infected;
-        this.orientation = new Double2D();
+        this.lastDirection = new Double2D();
         this.symptomVisibility = symptomVisibility;
     }
 
@@ -103,18 +115,12 @@ public class Agent implements Steppable
         DiseaseSpread sim = (DiseaseSpread)state;
 
         // Collect nearby items and sort them by type.
-        Bag neighbors = sim.environment.getObjectsWithinDistance(location, sensoryRange);
+        Bag neighbors = sim.environment.getObjectsExactlyWithinDistance(location, sensoryRange, true);
         ArrayList<Agent> nearbyAgents = new ArrayList<Agent>();
         ArrayList<Food> nearbyFood = new ArrayList<Food>();
         for(int i = 0; i < neighbors.numObjs; i++) {
             // Ignore ourselves.
             if(neighbors.objs[i] == this) {
-                continue;
-            }
-            // Doc says getObjectsWithinDistance() may return objects outside the
-            // range, so we have to ignore those objects.
-            Double2D objLoc = sim.environment.getObjectLocation(neighbors.objs[i]); 
-            if(objLoc.distance(this.location) > sensoryRange) {
                 continue;
             }
             if(neighbors.objs[i] instanceof Food) {
@@ -257,145 +263,115 @@ public class Agent implements Steppable
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
-        MutableDouble2D avgOrientation = new MutableDouble2D(this.orientation),
-                        foodAttraction = new MutableDouble2D(),
-                        flockAttraction = new MutableDouble2D(),
-                        flockRepulsion = new MutableDouble2D(),
-                        agentRepulsion = new MutableDouble2D();
-
-        // primary factor is the orientation of our neighbors if flocking
-        MutableDouble2D sumOrientation = new MutableDouble2D();
-        for (Agent other : nearbyAgents) {
-            double d = other.location.distance(this.location); 
-            if (d < minDistance) {
-                d = minDistance;
-            }
-            Double2D force = other.orientation.multiply(1.0 / (d * d));
-            sumOrientation.addIn(force);
+        // Modified "boids" flocking algorithm.
+        Double2D avoid = avoidance(nearbyAgents, sim.environment);
+        Double2D cohe = cohesion(nearbyAgents, sim.environment);
+        Double2D rand = randomness(sim.random);
+        Double2D cons = consistency(nearbyAgents, sim.environment);
+        Double2D mome = momentum();
+        double dx = cohesionFactor * cohe.x +
+                    avoidanceFactor * avoid.x +
+                    consistencyFactor * cons.x +
+                    randomnessFactor * rand.x +
+                    momentumFactor * mome.x;
+        double dy = cohesionFactor * cohe.y +
+                    avoidanceFactor * avoid.y +
+                    consistencyFactor * cons.y +
+                    randomnessFactor * rand.y +
+                    momentumFactor * mome.y;
+        double dis = Math.sqrt(dx * dx + dy * dy);
+        if (dis > 0) {
+            dx = dx / dis * 1.0;
+            dy = dy / dis * 1.0;
         }
-        if (sumOrientation.length() > 0) {
-            sumOrientation.normalize();
+        lastDirection = new Double2D(dx, dy);
+        location = new Double2D(sim.environment.stx(location.x + dx), sim.environment.sty(location.y + dy));
+        sim.environment.setObjectLocation(this, location);
+    }
+
+    // Returns "momentum" component of "boids" flocking algorithm.
+    public Double2D momentum()
+    {
+        return lastDirection;
+    }
+
+    // Returns "consistency" component of "boids" flocking algorithm.
+    public Double2D consistency(ArrayList<Agent> nearbyAgents, Continuous2D environment)
+    {
+        if (nearbyAgents == null || nearbyAgents.size() == 0)
+            return new Double2D(0, 0);
+
+        double x = 0; 
+        double y = 0;
+        int count = 0;
+        for(Agent other : nearbyAgents) {
+            double dx = environment.tdx(location.x, other.location.x);
+            double dy = environment.tdy(location.y, other.location.y);
+            Double2D m = other.momentum();
+            count++;
+            x += m.x;
+            y += m.y;
         }
-        avgOrientation.addIn(sumOrientation.multiplyIn(0.7));
-
-        // agent attraction / repulsion
-        for (Agent other : nearbyAgents) {
-            Double2D force, direction;
-            double d = other.location.distance(this.location);
-            if (d < minDistance) {
-                d = minDistance;
-            }
-
-            direction = other.location.subtract(this.location);
-            if (direction.length() > 0) {
-                if (looksInfected(other)) {
-                    force = direction.normalize().multiply(-1.0 / (d * d));
-                    agentRepulsion.addIn(force);
-                }
-                else if (flockingFactor > 0){
-                    double dot = direction.normalize().dot(this.orientation);
-                    // if leading the other agent
-                    if (d <= separationDistance) {
-                        force = direction.normalize().multiply(-1 / (d * d));
-                        flockRepulsion.addIn(force);
-                    }
-                    else if (dot > 0) {
-                        force = direction.normalize().multiply(dot / (d * d));
-                        flockAttraction.addIn(force);
-                    }
-                }
-            }
+        if (count > 0) {
+            x /= count;
+            y /= count;
         }
+        return new Double2D(x, y);
+    }
 
-        // We are attracted to food.
-        boolean foundFood = false;
-        for (Food item : nearbyFood) {
-            Double2D itemLoc = sim.environment.getObjectLocation(item);
-            if(itemLoc == null) {  // this may be null if we just ate the item
-                continue;
-            }
-            foundFood = true;
-            double d = itemLoc.distance(this.location);
-
-            double penaltyFactor = 1;
-            for (Agent other : nearbyAgents) {
-                double dother = itemLoc.distance(other.location);
-                // if agent is closer, invoke a penalty on the food
-                if (dother <= d) {
-                    penaltyFactor += (d - dother);
-                }
-            }
-            
-            Double2D direction = itemLoc.subtract(this.location);
-            if (direction.length() > 0) {
-                Double2D force = direction.normalize().multiply(item.energy / (d * d * penaltyFactor));
-                foodAttraction.addIn(force);
-            }
-        }
-
-        MutableDouble2D randomDirection = new MutableDouble2D(
-                sim.random.nextDouble() - 0.5, sim.random.nextDouble() - 0.5);
-        randomDirection.normalize();
+    // Returns "cohesion" component of "boids" flocking algorithm.
+    public Double2D cohesion(ArrayList<Agent> nearbyAgents, Continuous2D environment)
+    {
+        if (nearbyAgents == null || nearbyAgents.size() == 0)
+            return new Double2D(0, 0);
         
-        if (avgOrientation.length() > 0) {
-            avgOrientation.normalize();
+        double x = 0; 
+        double y = 0;        
+        int count = 0;
+        for(Agent other : nearbyAgents) {
+            double dx = environment.tdx(location.x, other.location.x);
+            double dy = environment.tdy(location.y, other.location.y);
+            count++;
+            x += dx;
+            y += dy;
         }
-        if (foodAttraction.length() > 0) {
-            foodAttraction.normalize();
+        if (count > 0) {
+            x /= count;
+            y /= count;
         }
-        if (flockAttraction.length() > 0) {
-            flockAttraction.normalize();
-        }
-        if (flockRepulsion.length() > 0) {
-            flockRepulsion.normalize();
-        }
-        if (agentRepulsion.length() > 0) {
-            agentRepulsion.normalize();
-        }
+        return new Double2D(-x / 10, -y / 10);
+    }
+ 
+    // Returns "avoidance" component of "boids" flocking algorithm.
+    public Double2D avoidance(ArrayList<Agent> nearbyAgents, Continuous2D environment)
+    {
+        if (nearbyAgents == null || nearbyAgents.size() == 0)
+            return new Double2D(0, 0);
 
-        // If we don't see anything, then avgOrientation will dominate
-        // randomDirection, and we will keep moving in the same direction
-        // forever. To avoid this, if we don't see anything, we randomly set
-        // avgOrientation to zero with a 1/10 probability.
-        if (nearbyFood.isEmpty() && nearbyAgents.isEmpty() && sim.random.nextDouble() < 0.1) {
-            avgOrientation.zero();
+        double x = 0;
+        double y = 0;
+        int count = 0;
+        for(Agent other : nearbyAgents) {
+            double dx = environment.tdx(location.x, other.location.x);
+            double dy = environment.tdy(location.y, other.location.y);
+            double lensquared = dx * dx + dy * dy;
+            count++;
+            x += dx / (lensquared * lensquared + 1);
+            y += dy / (lensquared * lensquared + 1);
         }
-
-        MutableDouble2D sumForces = new MutableDouble2D();
-        sumForces.addIn(avgOrientation.multiplyIn(orientationFactor))
-                 .addIn(foodAttraction.multiplyIn(foodFactor * satiatedEnergy / energy))
-                 .addIn(flockAttraction.multiplyIn(flockingFactor))
-                 .addIn(flockRepulsion.multiplyIn(flockRepulsionFactor * flockingFactor))
-                 .addIn(agentRepulsion.multiplyIn(repulsionFactor))
-                 .addIn(randomDirection.multiplyIn(randomnessFactor));
-        /*
-        System.out.println("sumForces:");
-        System.out.println("avgOrientation: " + avgOrientation);
-        System.out.println("foodAttraction: " + foodAttraction);
-        System.out.println("flockAttraction: " + flockAttraction);
-        System.out.println("agentRepulsion: " + agentRepulsion);
-        System.out.println("randomDirection: " + randomDirection);
-        System.out.println("sum == " + sumForces);
-        */
-
-        // Move to the location given by the sum of forces.
-        // Careful, need to setObjectLocation and *also* update this.location.
-
-        if(sumForces.length() > 0) {
-            sumForces.normalize();
+        if (count > 0) {
+            x /= count;
+            y /= count;
         }
-        // System.out.println("normalized sum == " + sumForces);
+        return new Double2D(400 * x, 400 * y);      
+    }
 
-        // Move to the location given by the sum of forces.
-        // Careful, need to setObjectLocation and *also* update this.location.
-        // System.out.println("current orientation: " + this.orientation +
-        //                    " new orientation: " + sumForces);
-        this.orientation = new Double2D(sumForces);
-        sumForces.addIn(this.location);
-        sumForces.x = DiseaseSpread.clamp(sumForces.x, 0, DiseaseSpread.xMax);
-        sumForces.y = DiseaseSpread.clamp(sumForces.y, 0, DiseaseSpread.yMax);
-        // System.out.println("current location: " + this.location + " new location: " + sumForces);
-        this.location = new Double2D(sumForces);
-        sim.environment.setObjectLocation(this, this.location);
+    // Returns "randomness" component of the "boids" flocking algorithm.
+    public Double2D randomness(MersenneTwisterFast r)
+    {
+        double x = r.nextDouble() * 2 - 1.0;
+        double y = r.nextDouble() * 2 - 1.0;
+        double l = Math.sqrt(x * x + y * y);
+        return new Double2D(0.05 * x / l, 0.05 * y / l);
     }
 }
