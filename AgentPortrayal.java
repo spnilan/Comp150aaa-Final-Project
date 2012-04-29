@@ -1,5 +1,6 @@
 import sim.portrayal.*;
 import sim.portrayal.simple.*;
+import sim.util.*;
 import java.awt.*;
 
 /**
@@ -115,6 +116,32 @@ class AgentPortrayal extends OvalPortrayal2D
         drawCircle(x, y, radius, graphics, infectionRangeColor, false);
     }
 
+    public void drawForces(final Agent agent, Graphics2D graphics, DrawInfo2D info)
+    {
+        final double radius = 60;
+        Double2D sum = new Double2D(0, 0);
+        for(final Agent.Force f : agent.lastForces) {
+            sum = sum.add(f.force.multiply(f.multiplier));
+        }
+        double len = sum.length();
+        double resizeFactor = radius / len;
+        drawOneForce("sum", sum.multiply(resizeFactor), graphics, info);
+        for(final Agent.Force f : agent.lastForces) {
+            drawOneForce(f.name, f.force.multiply(f.multiplier * resizeFactor), graphics, info);
+        }
+    }
+
+    public void drawOneForce(String name, Double2D force, Graphics2D graphics, DrawInfo2D info)
+    {
+        graphics.drawLine((int)(info.draw.x),
+                          (int)(info.draw.y),
+                          (int)(info.draw.x + force.x),
+                          (int)(info.draw.y + force.y));
+        graphics.drawString(name,
+                            (int)(info.draw.x + force.x),
+                            (int)(info.draw.y + force.y));
+    }
+
     // default agentWidth = 10, agentHeight = 10
     public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
     {
@@ -125,7 +152,7 @@ class AgentPortrayal extends OvalPortrayal2D
             drawSensoryRange(graphics, info);
             drawEatingRange(graphics, info);
             drawInfectionRange(graphics, info);
+            drawForces(agent, graphics, info);
         }
     }
-
 }

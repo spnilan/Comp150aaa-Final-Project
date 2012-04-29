@@ -29,9 +29,10 @@ public class Agent implements Steppable
     protected double randomnessFactor = 1.0;
     protected double consistencyFactor = 1.0;
     protected double momentumFactor = 1.0;
+    protected double foodAttractionFactor = 1.0;
+    protected double diseaseAvoidanceFactor = 1.0;
 
     // XXX obsolete:
-    protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 2.5;
     protected static double flockingFactor = defaultFlockingFactor;
     protected static double flockRepulsionFactor = 0.7;
@@ -56,6 +57,20 @@ public class Agent implements Steppable
     public double symptomVisibility;
     protected Stoppable scheduleItem;
 
+    // Attractive / repulsive forces, for visualization.
+    public static class Force {
+        String name;
+        Double2D force;
+        double multiplier;
+
+        public Force(String n, Double2D f, double m) {
+            name = n;
+            force = f;
+            multiplier = m;
+        }
+    };
+    ArrayList<Force> lastForces;
+
     /** Initializes an agent with the given id and location. */
     public Agent(int id, Double2D location, boolean infected, double symptomVisibility)
     {
@@ -65,6 +80,7 @@ public class Agent implements Steppable
         this.infected = infected;
         this.lastDirection = new Double2D();
         this.symptomVisibility = symptomVisibility;
+        this.lastForces = new ArrayList<Force>();
     }
 
     /** Returns random symptom visibility for the given infected state. */
@@ -264,29 +280,58 @@ public class Agent implements Steppable
         DiseaseSpread sim = (DiseaseSpread)state;
 
         // Modified "boids" flocking algorithm.
-        Double2D avoid = avoidance(nearbyAgents, sim.environment);
-        Double2D cohe = cohesion(nearbyAgents, sim.environment);
-        Double2D rand = randomness(sim.random);
-        Double2D cons = consistency(nearbyAgents, sim.environment);
-        Double2D mome = momentum();
-        double dx = cohesionFactor * cohe.x +
-                    avoidanceFactor * avoid.x +
-                    consistencyFactor * cons.x +
-                    randomnessFactor * rand.x +
-                    momentumFactor * mome.x;
-        double dy = cohesionFactor * cohe.y +
-                    avoidanceFactor * avoid.y +
-                    consistencyFactor * cons.y +
-                    randomnessFactor * rand.y +
-                    momentumFactor * mome.y;
+        Double2D avoidance = avoidance(nearbyAgents, sim.environment);
+        Double2D cohesion = cohesion(nearbyAgents, sim.environment);
+        Double2D randomness = randomness(sim.random);
+        Double2D consistency = consistency(nearbyAgents, sim.environment);
+        Double2D momentum = momentum();
+        Double2D foodAttraction = food(nearbyFood, sim.environment);
+        Double2D diseaseAvoidance = diseaseAvoidance(nearbyAgents, sim.environment);
+        System.out.println("avoidance: " + avoidance);
+        System.out.println("cohesion: " + cohesion);
+        System.out.println("randomness: " + randomness);
+        System.out.println("consistency: " + consistency);
+        System.out.println("momentum: " + momentum);
+        System.out.println("food: " + foodAttraction);
+        System.out.println("diseaseAvoidance: " + diseaseAvoidance);
+
+        // We are more attracted to food if we're hungry.
+        // double actualMomentumFactor = momentumFactor * (initialEnergy / getEnergy());
+
+        // Sum all forces.
+        double dx = cohesionFactor * cohesion.x +
+                    avoidanceFactor * avoidance.x +
+                    consistencyFactor * consistency.x +
+                    randomnessFactor * randomness.x +
+                    momentumFactor * momentum.x +
+                    foodAttractionFactor * foodAttraction.x +
+                    diseaseAvoidanceFactor * diseaseAvoidance.x;
+        double dy = cohesionFactor * cohesion.y +
+                    avoidanceFactor * avoidance.y +
+                    consistencyFactor * consistency.y +
+                    randomnessFactor * randomness.y +
+                    momentumFactor * momentum.y +
+                    foodAttractionFactor * foodAttraction.y +
+                    diseaseAvoidanceFactor * diseaseAvoidance.y;
         double dis = Math.sqrt(dx * dx + dy * dy);
         if (dis > 0) {
             dx = dx / dis * 1.0;
             dy = dy / dis * 1.0;
         }
         lastDirection = new Double2D(dx, dy);
+        System.out.println("normalized sum: " + lastDirection + "\n");
         location = new Double2D(sim.environment.stx(location.x + dx), sim.environment.sty(location.y + dy));
         sim.environment.setObjectLocation(this, location);
+
+        // Save forces for the visualization.
+        lastForces.clear();
+        lastForces.add(new Force("cohesion", cohesion, cohesionFactor));
+        lastForces.add(new Force("avoidance", avoidance, avoidanceFactor));
+        lastForces.add(new Force("consistency", consistency, consistencyFactor));
+        lastForces.add(new Force("randomness", randomness, randomnessFactor));
+        lastForces.add(new Force("momentum", momentum, momentumFactor));
+        lastForces.add(new Force("foodAttraction", foodAttraction, foodAttractionFactor));
+        lastForces.add(new Force("diseaseAvoidance", diseaseAvoidance, diseaseAvoidanceFactor));
     }
 
     // Returns "momentum" component of "boids" flocking algorithm.
@@ -343,6 +388,8 @@ public class Agent implements Steppable
     }
  
     // Returns "avoidance" component of "boids" flocking algorithm.
+    // (Avoids very close agents, for flocking. Does not care whether others are
+    // infected.)
     public Double2D avoidance(ArrayList<Agent> nearbyAgents, Continuous2D environment)
     {
         if (nearbyAgents == null || nearbyAgents.size() == 0)
@@ -373,5 +420,59 @@ public class Agent implements Steppable
         double y = r.nextDouble() * 2 - 1.0;
         double l = Math.sqrt(x * x + y * y);
         return new Double2D(0.05 * x / l, 0.05 * y / l);
+    }
+
+    // Returns our new "food" component for the "boids" flocking algorithm.
+    public Double2D food(ArrayList<Food> nearbyFood, Continuous2D environment)
+    {
+        if (nearbyFood == null || nearbyFood.size() == 0)
+            return new Double2D(0, 0);
+        
+        double x = 0; 
+        double y = 0;        
+        for(Food item : nearbyFood) {
+            Double2D itemLoc = environment.getObjectLocation(item);
+            if(itemLoc == null) {  // this may be null if we just ate the item
+                continue;
+            }
+            double dx = environment.tdx(location.x, itemLoc.x);
+            double dy = environment.tdy(location.y, itemLoc.y);
+            double distSq = dx * dx + dy * dy;
+            x += -dx / distSq;
+            y += -dy / distSq;
+        }
+        double l = Math.sqrt(x * x + y * y);
+        if(l == 0) {
+            l = 1;
+        }
+        return new Double2D(20 * x / l, 20 * y / l);
+    }
+
+    // Returns "disease avoidance" component of our modified "boids" flocking
+    // algorithm. (Avoids sick agents.)
+    public Double2D diseaseAvoidance(ArrayList<Agent> nearbyAgents, Continuous2D environment)
+    {
+        if (nearbyAgents == null || nearbyAgents.size() == 0)
+            return new Double2D(0, 0);
+
+        double x = 0;
+        double y = 0;
+        int count = 0;
+        for(Agent other : nearbyAgents) {
+            if(!looksInfected(other)) {
+                continue;
+            }
+            double dx = environment.tdx(location.x, other.location.x);
+            double dy = environment.tdy(location.y, other.location.y);
+            double lensquared = dx * dx + dy * dy;
+            count++;
+            x += dx / (lensquared + 1);
+            y += dy / (lensquared + 1);
+        }
+        if (count > 0) {
+            x /= count;
+            y /= count;
+        }
+        return new Double2D(50 * x, 50 * y);      
     }
 }
