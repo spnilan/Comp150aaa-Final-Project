@@ -351,13 +351,12 @@ public class Agent implements Steppable
         }
 
         MutableDouble2D sumForces = new MutableDouble2D();
-        sumForces.addIn(
-                avgOrientation.multiplyIn(orientationFactor)).addIn(
-                foodAttraction.multiplyIn(foodFactor * satiatedEnergy / energy)).addIn(
-                flockAttraction.multiplyIn(flockingFactor)).addIn(
-                flockRepulsion.multiplyIn(flockRepulsionFactor * flockingFactor)).addIn(
-                agentRepulsion.multiplyIn(repulsionFactor)).addIn(
-                randomDirection.multiplyIn(randomnessFactor));
+        sumForces.addIn(avgOrientation.multiplyIn(orientationFactor))
+                 .addIn(foodAttraction.multiplyIn(foodFactor * satiatedEnergy / energy))
+                 .addIn(flockAttraction.multiplyIn(flockingFactor))
+                 .addIn(flockRepulsion.multiplyIn(flockRepulsionFactor * flockingFactor))
+                 .addIn(agentRepulsion.multiplyIn(repulsionFactor))
+                 .addIn(randomDirection.multiplyIn(randomnessFactor));
         /*
         System.out.println("sumForces:");
         System.out.println("avgOrientation: " + avgOrientation);
