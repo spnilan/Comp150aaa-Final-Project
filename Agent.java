@@ -32,7 +32,7 @@ public class Agent implements Steppable
     protected static final double repulsionFactor = 1.1;
     protected static final double randomnessFactor = 1.0;
     protected static final double orientationFactor = 1.4;
-    protected static final double separationDistance = 8;
+    protected static final double separationDistance = 4;
     protected static final double minDistance = 1;
 
     // Observability parameters:
