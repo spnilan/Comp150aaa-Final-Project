@@ -13,10 +13,6 @@ public class FoodMaker implements Steppable
     protected static final int spawnCount = 15;
     protected static final double clusterVariance = 1;
 
-    protected static final double energyPerAgentStep = 10;
-    
-    double foodEnergyTarget = Agent.initialEnergy;
-
     /**
      * If the totalEnergyFood of the simulation is smaller than numAgentsInitial
      * * foodEnergyPerAgent by more than energyDeficitThreshold, creates
@@ -26,7 +22,7 @@ public class FoodMaker implements Steppable
     {
         DiseaseSpread sim = (DiseaseSpread)state;
 
-        foodEnergyTarget += sim.numAgentsInitial * energyPerAgentStep;
+        double foodEnergyTarget = sim.numAgentsInitial * foodEnergyPerAgent;
         if(foodEnergyTarget - sim.getTotalEnergyFood() > energyDeficitThreshold) {
             // Spawn new food items in a Gaussian cluster.
             double cx = sim.random.nextDouble() * sim.xMax,

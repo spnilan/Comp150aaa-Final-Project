@@ -5,7 +5,7 @@ class Disease
 {
     protected static double highTransmission = .9;
     protected static double lowTransmission = .1;
-    protected static double highDrain = 2.5;
+    protected static double highDrain = 5;
     protected static double lowDrain = 1.15;
     protected double probTransmission;
     protected double probRecovery;
