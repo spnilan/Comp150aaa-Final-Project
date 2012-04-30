@@ -1,13 +1,11 @@
 Seed            Parameters                  
 -------------------------------------------------------------------------------
-1335794147573   -disease avian-flu -observability 0.2 -symptom-tolerance 0.9
--num 10
+1335794147573   -disease avian-flu -observability 0.2 -symptom-tolerance 0.9 -num 10
 Avian flu, low observability, low paranoia, flocking
 Low observability and very trusting agents -> all agents die quickly
 
 
-1335794844722   -disease malaria -observability 0.9 -symptom-tolerance 0.2 -num
-10
+1335794844722   -disease malaria -observability 0.9 -symptom-tolerance 0.2 -num 10
 Malaria, good observability, high paranoia, flocking
 After malaria kills two agents, remaining agents are chased around by one agent
 who is perceived as infected. Very amusing to watch. Go to about 650 steps or
@@ -19,8 +17,7 @@ Agents perceive each other as healthy, keep spreading disease to one another
 after they recover
  
 
-1335803277138   -flocking 0 -disease cold -symptom-tolerance 0.2 -observability
-0.2
+1335803277138   -flocking 0 -disease cold -symptom-tolerance 0.2 -observability 0.2
 Cold, low observability, paranoid, no flocking
 Disease dies out fairly quickly as agents avoid each other.
 
