@@ -1,30 +1,22 @@
-Seed            Parameters                  Remarks
+Seed            Parameters                  
 -------------------------------------------------------------------------------
-
-1335197270906   -disease malaria            Sick agents die immediately before
-                                            infecting any other agents.
-
-1335197435816   -disease malaria            Good showcase of malaria. Many
-                                            agents die, healthy agents form
-                                            flock after.
-
-1335197972531   -flocking 0 -disease cold   Disease dies quickly. Also shows
-                                            how even in no flocking, we 
-                                            sometimes have the appearance of
-                                            flocking.
-
-1335198299248   -disease cold               Cold lasts forever.
+1335794147573   -disease avian-flu -observability 0.2 -symptom-tolerance 0.9
+-num 10
+Avian flu, low observability, low paranoia, flocking
+Low observability and very trusting agents -> all agents die quickly
 
 
-1335198705401   -disease malaria            Shows agent avoiding healthy agent
-                -symptom-tolerance 0.2      and food cluster because he
-                -observability 0.2          perceives agent as infected.
-                -num 8                      Upper right corner. 
+1335794844722   -disease malaria -observability 0.9 -symptom-tolerance 0.2 -num
+10
+Malaria, good observability, high paranoia, flocking
+After malaria kills two agents, remaining agents are chased around by one agent
+who is perceived as infected. Very amusing to watch. Go to about 650 steps or
+so.
 
-1335199536096   -disease avian-flu          Most agents die. Around step 400
-                                            the remaining flock is broken up
-                                            by agents perceived to be
-                                            infected.
-                                            
-1335200078433   -disease none               Nice flocking simulation.
-                -observability 1.0
+1335795282879   -disease cold -symptom-tolerance 0.8 -observability 0.2 -num 10
+Cold, low observability, not paranoid, flocking
+Agents perceive each other as healthy, keep spreading disease to one another
+after they recover
+ 
+
+
