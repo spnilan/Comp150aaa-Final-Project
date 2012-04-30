@@ -25,10 +25,6 @@ public class DiseaseSpread extends SimState
     protected int numAgentsInfected;
     protected double totalEnergy;
     protected double totalEnergyAgents;
-    // TODO: Currently every time the energy of a food item or agent changes, we
-    // have to remember to update totalEnergy and totalEnergyAgents. Figure out
-    // a way to factor this out so it is in one place, instead of all over the
-    // code.
 
     // Statistics collected and displayed when the simulation ends:
     class Stats {
