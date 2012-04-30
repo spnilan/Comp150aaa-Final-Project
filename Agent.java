@@ -23,6 +23,8 @@ public class Agent implements Steppable
     protected static final double flockingDrainMultiplier = 0.5;
     protected static final double sharingRange = 10;
 
+    protected static final double sharingConstant = .3;
+
     // Flocking parameters:
     protected static final double foodFactor = 1.0;
     protected static final double defaultFlockingFactor = 2.5;
@@ -223,15 +225,16 @@ public class Agent implements Steppable
                 }
             }
             if (sharingAgents.size() > 0) {
-                energy += bestItem.energy / 2;
+                energy += bestItem.energy; //Removed division; no penalty for sharing.
                 for (Agent other : sharingAgents) {
-                    other.energy += bestItem.energy / (2 * sharingAgents.size());
+                    //other.energy += bestItem.energy / (2 * sharingAgents.size());
+		    other.energy += bestItem.energy * sharingConstant;
                 }
             } else {
-                energy += bestItem.energy;
+                //energy += bestItem.energy;
             }
 
-            sim.totalEnergyAgents += bestItem.energy;
+            sim.totalEnergyAgents += bestItem.energy + (sharingAgents.size() * (bestItem.energy * sharingConstant)); 
             bestItem.energy = 0;
             sim.environment.remove(bestItem);
             // bestItem will be removed from schedule on its next step().
