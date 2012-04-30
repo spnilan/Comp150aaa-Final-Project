@@ -1,3 +1,66 @@
+Disease-Spreading Simluation
+-------------------------------
+COMP-150-AAA project by:
+    Constantin Berzan
+    Sean Nilan
+    Amanda Hay
+    Max Alexander
+Tufts University, spring 2012.
+
+
+What's included?
+-------------------
+DiseaseSpread.java          - the simulation
+DiseaseSpreadWithUI.java    - the GUI for the simulation
+Agent.java                  - agent definition
+AgentPortrayal.java         - agent visualization
+Disease.java                - disease definitions
+Food.java                   - food item definition
+FoodPortrayal.java          - food item visualization
+FoodMaker.java              - an agent that adds food to the environment
+batch_runner.py             - runs batch simulations and plots agents alive / infected
+case_runner.py              - runs batch simulations for different scenarios
+
+
+Dependencies:
+----------------
+- Java (not included; we tried it with 1.6 only)
+- MASON simulation framework (included)
+- gson (included; required for collecting statistics)
+- JFreeChart library (included; only if plotting is desired)
+- JMF (included; only if recording videos is desired)
+- python 2.6+ with matplotlib (not included; only if batch runs with plotting are desired)
+
+
+Running:
+-----------
+1) See "Classpath" below for how to configure your Java classpath so that MASON,
+   gson, etc. are on it.
+2) To compile all Java code, just do:
+        make
+3) To run the simulation with a GUI, do:
+        java DiseaseSpreadWithUI
+   You can use the console to adjust parameters for the visualization. To adjust
+   parameters for the simulation itself (e.g. disease type, flocking), you will
+   need to specify those parameters on the command line. For a list, do:
+        java DiseaseSpreadWithUI -help
+4) To run the simulation without a GUI, do:
+        java DiseaseSpread
+   By default, this will run the simulation forever, which is probably not what
+   you want. Add "-for 400" to run for 400 steps. For other options, See:
+        java DiseaseSpread -help
+5) To run batch simulations for one condition, do, for example:
+        ./batch_runner.py --num 30 --sim-args "-for 3000 -disease cold \
+            -flocking 2.5 -observability 0.2 -symptom-tolerance 0.2" \
+            --title "testing testing" --fig "test.png"
+   This will run 30 trials of the simulation with the given parameters, and
+   plot the number of agents alive and infected at each time step in "test.png".
+   It will save the logs for each trial in a temporary directory.
+6) To run several "interesting" scenarios that we used in our presentation, do:
+        ./case_runner.py
+   This can take a while (30min+). It will produce all plots in ./plots/fig-*.png.
+
+
 Classpath:
 -------------
 Add the following to your ~/.bashrc to get Mason + charting to work:
