@@ -137,8 +137,6 @@ class AgentPortrayal extends OvalPortrayal2D
     public void drawOneForce(String name, Double2D force, Graphics2D graphics, DrawInfo2D info)
     {
         final double minLength = 40;
-        if(force.length() < minLength)
-            return;
 
         graphics.drawLine((int)(info.draw.x),
                           (int)(info.draw.y),
@@ -146,9 +144,11 @@ class AgentPortrayal extends OvalPortrayal2D
                           (int)(info.draw.y + force.y));
         // final double textRadius = 150;
         // force = force.resize(textRadius);
-        graphics.drawString(name,
-                            (int)(info.draw.x + force.x),
-                            (int)(info.draw.y + force.y));
+        if(force.length() >= minLength) {
+            graphics.drawString(name,
+                    (int)(info.draw.x + force.x),
+                    (int)(info.draw.y + force.y));
+        }
     }
 
     // default agentWidth = 10, agentHeight = 10
