@@ -19,4 +19,9 @@ Agents perceive each other as healthy, keep spreading disease to one another
 after they recover
  
 
+1335803277138   -flocking 0 -disease cold -symptom-tolerance 0.2 -observability
+0.2
+Cold, low observability, paranoid, no flocking
+Disease dies out fairly quickly as agents avoid each other.
+
 
