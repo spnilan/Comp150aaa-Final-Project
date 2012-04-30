@@ -8,7 +8,6 @@ import java.util.ArrayList;
  * An agent in the simulation. The agent has a certain amount of energy. The
  * agent can be healthy or infected.
  *
- * Uses some flocking code by Sean Luke ('flockers' example in Mason).
  */
 public class Agent implements Steppable
 {
@@ -84,7 +83,8 @@ public class Agent implements Steppable
     }
 
 
-    /** Returns random symptom visibility for the given infected state. */
+    /** Returns random symptom visibility for the given infected state. 
+     ** If perfect observability, will be actual infected state. */
     public static double calcSymptomVisibility(final DiseaseSpread sim, boolean infected)
     {
         double chance = -1;
@@ -99,12 +99,12 @@ public class Agent implements Steppable
     }
 
     /** Returns true if another agent looks infected from this agent's perspective. */
-    public boolean looksInfected(Agent guy)
+    public boolean looksInfected(Agent other)
     {
         if (useObservabilityRules) {
-            return (guy.symptomVisibility > this.symptomTolerance);
+            return (other.symptomVisibility > this.symptomTolerance);
         } else {
-            return guy.infected;
+            return other.infected;
         }
     }
 
@@ -156,6 +156,8 @@ public class Agent implements Steppable
                 withinFlockingRange++;
             }
         }
+
+        // Drain will be less if we are surrounded by other agents
         if(withinFlockingRange >= flockingMinOthers) {
             drain *= flockingDrainMultiplier;
         }
@@ -166,7 +168,7 @@ public class Agent implements Steppable
         energy -= drain;
         sim.totalEnergy -= actualDrain;
         sim.totalEnergyAgents -= actualDrain;
-        if(energy <= 0) {
+        if(energy <= 0) { // agent has died
             sim.environment.remove(this);
             scheduleItem.stop();
             System.out.println("Agent " + id + " died");
@@ -213,6 +215,8 @@ public class Agent implements Steppable
         if(bestItem != null) {
             ArrayList<Agent> sharingAgents = new ArrayList<Agent>();
 
+            // Share half of food with close-by neighbors
+            // In this way, it can be beneficial to be in a flock
             for (Agent guy: nearbyAgents) {
                 if (guy.location.distance(this.location) < sharingRange) {
                     sharingAgents.add(guy);
@@ -289,7 +293,8 @@ public class Agent implements Steppable
                         flockRepulsion = new MutableDouble2D(),
                         agentRepulsion = new MutableDouble2D();
 
-        // primary factor is the orientation of our neighbors if flocking
+        // The orientation vector from the previous step
+        // If we are flocking, we also account for our neighbors' orientations
         MutableDouble2D sumOrientation = new MutableDouble2D();
         for (Agent other : nearbyAgents) {
             double d = other.location.distance(this.location); 
@@ -304,7 +309,10 @@ public class Agent implements Steppable
         }
         avgOrientation.addIn(sumOrientation.multiplyIn(0.7));
 
-        // agent attraction / repulsion
+        // We are always repelled by agents perceived to be infected
+        // If we are in flocking mode:
+        // We are attracted to healthy agents that are in front of us
+        // We are repelled by healthy agents that are too close 
         for (Agent other : nearbyAgents) {
             Double2D force, direction;
             double d = other.location.distance(this.location);
@@ -333,7 +341,7 @@ public class Agent implements Steppable
             }
         }
 
-        // We are attracted to food.
+        // We are attracted to all visible food (vector sum)
         boolean foundFood = false;
         for (Food item : nearbyFood) {
             Double2D itemLoc = sim.environment.getObjectLocation(item);
@@ -346,7 +354,7 @@ public class Agent implements Steppable
             double penaltyFactor = 1;
             for (Agent other : nearbyAgents) {
                 double dother = itemLoc.distance(other.location);
-                // if agent is closer, invoke a penalty on the food
+                // If another agent is closer, invoke a penalty on the food
                 if (dother <= d) {
                     penaltyFactor += (d - dother);
                 }
@@ -394,30 +402,16 @@ public class Agent implements Steppable
                  .addIn(flockRepulsion.multiplyIn(flockRepulsionFactor * flockingFactor))
                  .addIn(agentRepulsion.multiplyIn(repulsionFactor))
                  .addIn(randomDirection.multiplyIn(randomnessFactor));
-        /*
-        System.out.println("sumForces:");
-        System.out.println("avgOrientation: " + avgOrientation);
-        System.out.println("foodAttraction: " + foodAttraction);
-        System.out.println("flockAttraction: " + flockAttraction);
-        System.out.println("agentRepulsion: " + agentRepulsion);
-        System.out.println("randomDirection: " + randomDirection);
-        System.out.println("sum == " + sumForces);
-        */
 
         if(sumForces.length() > 0) {
             sumForces.normalize();
         }
-        // System.out.println("normalized sum == " + sumForces);
 
-        // Move to the location given by the sum of forces.
-        // Careful, need to setObjectLocation and *also* update this.location.
-        // System.out.println("current orientation: " + this.orientation +
-        //                    " new orientation: " + sumForces);
+        // update our orientation and position in the environment
         this.orientation = new Double2D(sumForces);
         sumForces.addIn(this.location);
         sumForces.x = DiseaseSpread.clamp(sumForces.x, 0, DiseaseSpread.xMax);
         sumForces.y = DiseaseSpread.clamp(sumForces.y, 0, DiseaseSpread.yMax);
-        // System.out.println("current location: " + this.location + " new location: " + sumForces);
         this.location = new Double2D(sumForces);
         sim.environment.setObjectLocation(this, this.location);
 

@@ -43,6 +43,7 @@ class AgentPortrayal extends OvalPortrayal2D
         }
     }
 
+    // Signifies if an agent is perceived as infected
     public void drawAsterisk(final int x, final int y, int radius,
                              Graphics2D graphics, Color color) 
     {
@@ -142,8 +143,6 @@ class AgentPortrayal extends OvalPortrayal2D
                           (int)(info.draw.y),
                           (int)(info.draw.x + force.x),
                           (int)(info.draw.y + force.y));
-        // final double textRadius = 150;
-        // force = force.resize(textRadius);
         if(force.length() >= minLength) {
             graphics.drawString(name,
                     (int)(info.draw.x + force.x),

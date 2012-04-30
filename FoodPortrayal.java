@@ -3,7 +3,7 @@ import sim.portrayal.simple.*;
 import java.awt.*;
 
 /**
- * A portrayal (visualization) for a Food item.
+ * A simple portrayal (visualization) for a Food item.
  */
 class FoodPortrayal extends OvalPortrayal2D
 {
